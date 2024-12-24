@@ -1,1 +1,1 @@
-# torch nd partials
+# Torch Partials Repository
