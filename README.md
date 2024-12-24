@@ -1,1 +1,1 @@
-# torch-nd-partials
+# torch nd partials
