@@ -1,2 +1,0 @@
-def backward() -> None:
-	pass
