@@ -20,8 +20,8 @@ class Superset:
         self._graph: Graph = graph
 
     @classmethod
-    def construct(cls, source: Tensor, batch: Optional[bool] = True) -> "Superset":
-        graph: Graph = Graph.construct(source=source, batch=batch)
+    def construct(cls, source: Tensor) -> "Superset":
+        graph: Graph = Graph.construct(source=source)
         superset: "Superset" = cls(graph=graph)
         return superset
 
@@ -42,9 +42,11 @@ class Superset:
         self,
         order: int,
         target: Optional[Tensor] = None,
-        configuration: list[callable] = [],
+        configurations: list[callable] = [],
     ) -> None:
-        raise NotImplementedError()
+        _launch_backward(
+            graph=self._graph, order=order, target=target, configurations=configurations
+        )
         return None
 
     def operator_partials(self, tensor: Tensor) -> None:
@@ -79,11 +81,30 @@ def backward(
 
     assert isinstance(source, Tensor), f"source must be a {Tensor.__name__}."
     assert source.requires_grad, "source tensor must satisfy requires_grad=True."
+
+    # construct the computational graph
+    graph: Graph = Graph.construct(source=source)
+    graph = _launch_backward(
+        graph=graph, order=order, target=target, configurations=configurations
+    )
+    superset: Superset = Superset(graph=graph)
+
+    return superset
+
+
+def _launch_backward(
+    graph: Graph,
+    order: int,
+    target: Optional[Tensor] = None,
+    configurations: list[object] = [],
+) -> Superset:
+
+    assert isinstance(graph, Graph)
     assert isinstance(order, int), "order must be a possitive integer."
     assert order >= 0, "order must be a possitive integer."
     if target is not None:
         assert isinstance(target, Tensor), f"target must be a {Tensor.__name__}."
-        assert target.requires_grad, "target tensor must satisfy requires_grad=True."
+        assert target.requires_grad, f"target tensor must satisfy requires_grad=True."
 
     # validate and apply XAF selection configurations
     XAF_selector: Type[XAFselector] = DefaultSelector
@@ -114,7 +135,6 @@ def backward(
     selector_fn: Selector = XAF_selector._select
 
     # construct the computational graph
-    graph: Graph = Graph.construct(source=source)
     graph.load_XAFs(order=order, selector=selector_fn)
     graph.prune(target=target)
 
@@ -124,6 +144,5 @@ def backward(
 
     # prepare return
     graph.attach_partials()
-    superset: Superset = Superset(graph=graph)
 
-    return superset
+    return graph
