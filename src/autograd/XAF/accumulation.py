@@ -1,32 +1,33 @@
 # python 3.12
 
-# Standard Library dependencies
-from typing import Tuple
-
 # PyTorch dependencies
+from torch import Tensor
 
 # Internal dependencies
 from src.autograd.XAF.base import ExtendedAutogradFunction
 from src.utils.types import AutogradFunction, ShapedPartials
 
 
-class TransposeXBackward0(ExtendedAutogradFunction):
+class AccumulateGradX(ExtendedAutogradFunction):
 
     def __init__(self, grad_fn: AutogradFunction, order: int) -> None:
         super().__init__(grad_fn=grad_fn, order=order)
         return None
 
     def integral(self) -> bool:
-        integral: bool = 0 in self._output_registry
-        return integral
+        return True
 
-    def _get_context(self) -> Tuple[int, int]:
-        saved_dim0: int = self._grad_fn.saved_dim0
-        saved_dim1: int = self._grad_fn.saved_dim1
-        return (saved_dim0, saved_dim1)
+    def _get_context(self) -> None:
+        return None
 
     def _differentiation(
         self, shaped_output_partials: ShapedPartials, idx: int
     ) -> None:
-        raise NotImplementedError("TransposeXBackward0 is not implemented.")
+        assert idx == 0
+        assert len(shaped_output_partials[0]) == self._order
+
+        multipartials: list[list[Tensor]] = [list(shaped_output_partials[0])]
+        shapes: list[list[Tensor]] = [shaped_output_partials[1]]
+        self._update_multipartials(multipartials=multipartials, shapes=shapes)
+
         return None
