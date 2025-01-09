@@ -104,7 +104,7 @@ def _launch_backward(
     assert order >= 0, "order must be a possitive integer."
     if target is not None:
         assert isinstance(target, Tensor), f"target must be a {Tensor.__name__}."
-        assert target.requires_grad, f"target tensor must satisfy requires_grad=True."
+        assert target.requires_grad, "target tensor must satisfy requires_grad=True."
 
     # validate and apply XAF selection configurations
     XAF_selector: Type[XAFselector] = DefaultSelector

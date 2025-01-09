@@ -6,13 +6,11 @@ from abc import ABC, abstractmethod
 from typing import Any, Tuple, Union
 
 # PyTorch dependencies
-import torch
 from torch import Tensor
 
 # Internal dependencies
-from automatic_derivation import calculate_n_order_partial, SumGroup
-from contractor import contractor
 from src.utils.types import AutogradFunction, MultiPartials, Partials, ShapedPartials
+
 
 class ExtendedAutogradFunction(ABC):
 
@@ -91,7 +89,9 @@ class ExtendedAutogradFunction(ABC):
         gc.collect()
         return None
 
-    def _update_multipartials(self, multipartials: list[list[Tensor]], shapes: list[Tuple[int, ...]]) -> None:
+    def _update_multipartials(
+        self, multipartials: list[list[Tensor]], shapes: list[Tuple[int, ...]]
+    ) -> None:
 
         assert len(multipartials) == len(shapes)
 
@@ -118,7 +118,9 @@ class ExtendedAutogradFunction(ABC):
         pass
 
     @abstractmethod
-    def _differentiation(self, shaped_output_partials: ShapedPartials, idx: int) -> None:
+    def _differentiation(
+        self, shaped_output_partials: ShapedPartials, idx: int
+    ) -> None:
         # return boolean indecates whether:
         #   the partials are finished (True)
         #   the partials require more calls to be finished (False)
