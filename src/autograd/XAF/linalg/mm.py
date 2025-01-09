@@ -68,7 +68,7 @@ class MmXBackward0(ExtendedAutogradFunction):
         expressions = [calculate_n_order_partial(n=n + 1) for n in range(self._order)]
 
         # retrieve some data
-        internal_partials: list[Tensor, ...]
+        internal_partials: list[Tensor]
         size: Tuple[int, ...]
         graph_output_numel: int = output_partials[0].shape[0]
 

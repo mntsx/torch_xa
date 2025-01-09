@@ -6,7 +6,7 @@ from typing import Type
 
 # Internal dependencies
 from src.autograd.XAF.base import ExtendedAutogradFunction
-from src.autograd.XAF.test import TestXBackward0
+from src.autograd.XAF.testing import TestXBackward0
 from src.utils.relationships import grad_fn_map
 from src.utils.types import AutogradFunction
 
