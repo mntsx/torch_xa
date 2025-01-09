@@ -2,13 +2,17 @@
 
 # Standard Library dependencies
 import gc
+import math
+import warnings
 from abc import ABC, abstractmethod
+from itertools import permutations
 from typing import Any, Tuple, Union
 
 # PyTorch dependencies
 from torch import Tensor
 
 # Internal dependencies
+from src.utils.partials import unbroadcast_partials
 from src.utils.types import AutogradFunction, MultiPartials, Partials, ShapedPartials
 
 
@@ -110,6 +114,78 @@ class ExtendedAutogradFunction(ABC):
         self._multipartials = tuple(aux)
 
         return None
+
+    def _unbroadcast_partials(
+        self, shaped_partials: ShapedPartials, output_shape: Tuple[int, ...]
+    ) -> ShapedPartials:
+
+        def is_broadcastable(shape: Tuple[int, ...], target: Tuple[int, ...]) -> bool:
+            return all(math.gcd(s, t) == t for s, t in zip(shape, target))
+
+        shape: Tuple[int, ...] = shaped_partials[1]
+        padding: int = max((len(shape) - len(output_shape)), 0)
+        target: Tuple[int, ...] = (1,) * padding + output_shape
+        new_shaped_partials: ShapedPartials
+
+        if shape == target:
+
+            new_shaped_partials = shaped_partials
+
+        elif is_broadcastable(shape=shape, target=target):
+
+            # sumar las dimensiones que sean 1's en target
+            new_shaped_partials = unbroadcast_partials(
+                shaped_partials=shaped_partials, output_shape=target
+            )
+
+        elif math.gcd(math.prod(shape), math.prod(target)) == math.prod(target):
+
+            # Generate all broadcastable permutations
+            perms = list(permutations(shape))
+            broadcastable_perms: list[Tuple[int, ...]] = [
+                p for p in perms if is_broadcastable(p, target)
+            ]
+
+            if len(broadcastable_perms) == 0:
+                raise ValueError(
+                    "XAF found an intractable combination of permutation "
+                    "and broadcasting. Consider being more explicit in "
+                    "the arrangement of dimensions."
+                )
+
+            if len(broadcastable_perms) > 1:
+                warnings.warn(
+                    "XAF found an ambiguous combination of permutation "
+                    "and broadcasting. This can lead to errors in partials "
+                    "computations. Consider being more explicit in the "
+                    "arrangement of dimensions.",
+                    RuntimeWarning,
+                )
+
+            # select the best attending to 2 criteria:
+            # 1. The fewer swaps the better
+            # 2. Swaps in the last dimensions are better
+            def score(perm: Tuple[int, ...]) -> Tuple[int, int]:
+                movement: int = sum(1 for p, a in zip(perm, target) if p != a)
+                positions: list[int] = [
+                    i for i, (p, a) in enumerate(zip(perm, target)) if p != a
+                ]
+                return (movement, sum(positions))
+
+            best_permutation: Tuple[int] = min(broadcastable_perms, key=score)
+            new_shaped_partials = unbroadcast_partials(
+                shaped_partials=shaped_partials, output_shape=best_permutation
+            )
+
+        else:
+
+            raise ValueError(
+                "XAF found an intractable combination of permutation "
+                "and broadcasting. Consider being more explicit in "
+                "the arrangement of dimensions."
+            )
+
+        return new_shaped_partials
 
     @abstractmethod
     def _get_context(self) -> Any:

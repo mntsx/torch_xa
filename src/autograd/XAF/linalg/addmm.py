@@ -60,22 +60,100 @@ class AddmmXBackward0(ExtendedAutogradFunction):
         beta: float = ctx[1]
         m1: Tensor = ctx[2]  # input
         m1_sizes: Tuple[int, ...] = ctx[3]
-        m1_strides: Tuple[int, ...] = ctx[4]
         m2: Tensor = ctx[5]  # param.T
         m2_sizes: Tuple[int, ...] = ctx[6]
-        m2_strides: Tuple[int, ...] = ctx[7]
 
-        raise NotImplementedError("AddmmXBackward0 is not implemented.")
+        expected_output_shape: Tuple[int, ...] = (m1_sizes[0], m2_sizes[1])
+        shaped_output_partials = self._unbroadcast_partials(
+            shaped_partials=shaped_output_partials, output_shape=expected_output_shape
+        )
+        output_partials: Partials = shaped_output_partials[0]
+        output_shape: Tuple[int, ...] = shaped_output_partials[1]
+        assert len(output_partials) == self._order
 
-        partials_list: list[Tensor, ...]
-        numel: int = tensor.numel()
-        for i in range(order):
+        multipartials: list[list[Tensor]] = [[], [], []]
+        shapes: list[list[Tensor]] = [(m1_sizes[0], m2_sizes[1]), m1_sizes, m2_sizes]
+        expressions: list[SumGroup]
+        expressions = [calculate_n_order_partial(n=n + 1) for n in range(self._order)]
+
+        # retrieve some data
+        internal_partials: list[Tensor]
+        size: Tuple[int, ...]
+        graph_output_numel: int = output_partials[0].shape[0]
+
+        # compute input partials
+        for i, partial in enumerate(output_partials):
+            new_partial: Tensor
             if i == 0:
-                partial: Tensor = beta * mat2.T
+                new_partial = alpha * partial
             else:
-                partial: Tensor = torch.zeros(size=(numel for _ in range(i + 2)))
-            partials_list.append(partial)
+                new_partial = torch.zeros_like(partial)
+            multipartials[0].append(new_partial)
 
-        partials: Tuple[Tuple[Tensor, ...], int] = ((tuple(partials_list), 0),)
+        # compute m1 internal partials
+        internal_partials = list()
+        for order in range(1, self._order + 1):
+            internal_partial: Tensor
+            if order == 1:
+                internal_partial = beta * m2.T
+            else:
+                size = (m2_sizes[1], *[m2_sizes[0] for _ in range(order)])
+                internal_partial = torch.zeros(size=size)
+            internal_partials.append(internal_partial)
 
-        return None  # (input_partials, mat1_partials, mat2_partials)
+        # compute m1 partials
+        pretensors: Tuple[Tensor, ...]
+        subtensors: Tuple[Tensor, ...]
+        contracted_tensor: Tensor
+        aux: list[Tensor] = list()
+        for i, partial in enumerate(output_partials):
+            size = (partial.shape[0], *(list(output_shape) * (i + 1)))
+            aux.append(partial.view(size=size))
+        pretensors = tuple(aux)
+        subtensors = tuple(internal_partials)
+        for i, expression in enumerate(expressions):
+            contracted_tensor = contractor(
+                pretensors=pretensors,
+                subtensors=subtensors,
+                expression=expression,
+                batch=True,
+            )
+            dual_numel: int = m1_sizes[0] * m2_sizes[0]
+            size = (graph_output_numel, *[dual_numel for _ in range(i + 1)])
+            multipartials[1].append(contracted_tensor.view(size=size))
+
+        # compute m2 internal partials
+        internal_partials = list()
+        for order in range(1, self._order + 1):
+            internal_partial: Tensor
+            if order == 1:
+                internal_partial = beta * m1
+            else:
+                size: Tuple[int, ...]
+                size = (m1_sizes[0], *[m1_sizes[1] for _ in range(order)])
+                internal_partial = torch.zeros(size=size)
+            internal_partials.append(internal_partial)
+
+        # compute m2 partials
+        aux = list()
+        for i, pretensor in enumerate(pretensors):
+            dims: list[int]
+            dims = [j - 1 if j % 2 == 0 else j + 1 for j in range(1 + 2 * (i + 1))]
+            dims[0] = 0
+            aux.append(pretensor.permute(dims=tuple(dims)))
+        pretensors = tuple(aux)
+        subtensors = tuple(internal_partials)
+        for i, expression in enumerate(expressions):
+            contracted_tensor = contractor(
+                pretensors=pretensors,
+                subtensors=subtensors,
+                expression=expression,
+                batch=True,
+            )
+            dual_numel: int = m1_sizes[1] * m2_sizes[1]
+            size = (graph_output_numel, *[dual_numel for _ in range(i + 1)])
+            multipartials[2].append(contracted_tensor.view(size=size))
+
+        self._update_multipartials(multipartials=multipartials, shapes=shapes)
+
+        return None

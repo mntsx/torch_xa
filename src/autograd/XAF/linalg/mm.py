@@ -50,17 +50,27 @@ class MmXBackward0(ExtendedAutogradFunction):
 
         assert idx == 0
 
-        ctx: Tuple[Tensor, Tensor] = self._get_context()
+        ctx: Tuple[
+            Tensor,
+            Tuple[int, ...],
+            Tuple[int, ...],
+            Tensor,
+            Tuple[int, ...],
+            Tuple[int, ...],
+        ]
+        ctx = self._get_context()
         m1: Tensor = ctx[0]
         m1_sizes: Tuple[int, ...] = ctx[1]
         m2: Tensor = ctx[3]
         m2_sizes: Tuple[int, ...] = ctx[4]
 
+        expected_output_shape: Tuple[int, ...] = (m1_sizes[0], m2_sizes[1])
+        shaped_output_partials = self._unbroadcast_partials(
+            shaped_partials=shaped_output_partials, output_shape=expected_output_shape
+        )
         output_partials: Partials = shaped_output_partials[0]
         output_shape: Tuple[int, ...] = shaped_output_partials[1]
-
         assert len(output_partials) == self._order
-        assert output_shape == (m1_sizes[0], m2_sizes[1])
 
         multipartials: list[list[Tensor]] = [[], []]
         shapes: list[list[Tensor]] = [m1_sizes, m2_sizes]
@@ -86,13 +96,13 @@ class MmXBackward0(ExtendedAutogradFunction):
         # compute m1 partials
         pretensors: Tuple[Tensor, ...]
         subtensors: Tuple[Tensor, ...]
+        contracted_tensor: Tensor
         aux: list[Tensor] = list()
         for i, partial in enumerate(output_partials):
             size = (partial.shape[0], *(list(output_shape) * (i + 1)))
             aux.append(partial.view(size=size))
         pretensors = tuple(aux)
         subtensors = tuple(internal_partials)
-        contracted_tensor: Tensor
         for i, expression in enumerate(expressions):
             contracted_tensor = contractor(
                 pretensors=pretensors,
@@ -117,7 +127,7 @@ class MmXBackward0(ExtendedAutogradFunction):
             internal_partials.append(internal_partial)
 
         # compute m2 partials
-        aux: list[Tensor] = list()
+        aux = list()
         for i, pretensor in enumerate(pretensors):
             dims: list[int]
             dims = [j - 1 if j % 2 == 0 else j + 1 for j in range(1 + 2 * (i + 1))]

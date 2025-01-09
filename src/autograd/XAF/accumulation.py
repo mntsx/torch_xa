@@ -1,5 +1,8 @@
 # python 3.12
 
+# Standard Library dependencies
+from typing import Tuple
+
 # PyTorch dependencies
 from torch import Tensor
 
@@ -17,14 +20,21 @@ class AccumulateGradX(ExtendedAutogradFunction):
     def integral(self) -> bool:
         return True
 
-    def _get_context(self) -> None:
-        return None
+    def _get_context(self) -> Tuple[Tensor]:
+        variable: Tensor = self._grad_fn.variable
+        return (variable,)
 
     def _differentiation(
         self, shaped_output_partials: ShapedPartials, idx: int
     ) -> None:
         assert idx == 0
         assert len(shaped_output_partials[0]) == self._order
+
+        variable: Tensor = self._get_context()[0]
+        expected_output_shape: Tuple[int, ...] = tuple(variable.shape)
+        shaped_output_partials = self._unbroadcast_partials(
+            shaped_partials=shaped_output_partials, output_shape=expected_output_shape
+        )
 
         multipartials: list[list[Tensor]] = [list(shaped_output_partials[0])]
         shapes: list[list[Tensor]] = [shaped_output_partials[1]]
