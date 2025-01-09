@@ -1,4 +1,4 @@
-# PyTorch Extended Autograd Repository
+# PyTorch Extended Autograd
 
 ## Introduction
 
