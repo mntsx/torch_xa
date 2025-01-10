@@ -70,8 +70,12 @@ To install **torch_xa** and start exploring higher-order derivatives, follow the
 ## User Guide
 
 **Key Differences** between torch native autograd and torch_xa extended autograd:
-1. **Non-Scalar Source**: Extended autograd supports partial derivatives from any tensor (not necessarily scalar).
-2. **Dimensional Flattening**: The gradients calculated by PyTorch's autograd from a scalar only consider the dimensionality of the first partial derivative's conforming dual spaces, maintaining this "intravariable" dimensionality. In contrast, Extended Autograd supports partial derivatives from non-scalar tensors and higher-order derivatives, which requires managing both the output tensor's dimensionality and the "intervariable" dimensions (multiple derivations with respect to the same variable). To simplify derivative identification for users, the "intravariable" dimensionality is flattened.
+1. **Multiple First-Order Partial Derivatives**:  
+   **torch_xa** allows users to compute the N first-order partial derivatives of the output tensor with respect to each input tensor. These derivatives are returned as a `Tuple[Tensor, ...]`, enabling simultaneous access to multiple gradient directions and facilitating more complex gradient-based computations.
+2. **Non-Scalar Source**:  
+   Extended autograd supports partial derivatives from any tensor (not necessarily scalar).
+3. **Dimensional Flattening**:  
+   The gradients calculated by PyTorch's autograd from a scalar only consider the dimensionality of the first partial derivative's conforming dual spaces, maintaining this "intravariable" dimensionality. In contrast, Extended Autograd supports partial derivatives from non-scalar tensors and higher-order derivatives, which requires managing both the output tensor's dimensionality and the "intervariable" dimensions (multiple derivations with respect to the same variable). To simplify derivative identification for users, the "intravariable" dimensionality is flattened.
 
 The **torch_xa** package offers two primary approaches for launching the extended autograd:
 
