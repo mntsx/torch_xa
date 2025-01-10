@@ -37,7 +37,7 @@ class AddXBackward0(ExtendedAutogradFunction):
         assert len(output_partials) == self._order
 
         multipartials: list[list[Tensor]] = [[], []]
-        shapes: list[list[Tensor]] = [output_shape, output_shape]
+        shapes: list[Tuple[int, ...]] = [output_shape, output_shape]
 
         # compute input partials
         new_partial: Tensor

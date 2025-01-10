@@ -72,7 +72,7 @@ class AddmmXBackward0(ExtendedAutogradFunction):
         assert len(output_partials) == self._order
 
         multipartials: list[list[Tensor]] = [[], [], []]
-        shapes: list[list[Tensor]] = [(m1_sizes[0], m2_sizes[1]), m1_sizes, m2_sizes]
+        shapes: list[Tuple[int, ...]] = [(m1_sizes[0], m2_sizes[1]), m1_sizes, m2_sizes]
         expressions: list[SumGroup]
         expressions = [calculate_n_order_partial(n=n + 1) for n in range(self._order)]
 

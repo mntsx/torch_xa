@@ -51,7 +51,7 @@ class MulXBackward0(ExtendedAutogradFunction):
         assert len(output_partials) == self._order
 
         multipartials: list[list[Tensor]] = [[], []]
-        shapes: list[list[Tensor]] = [tuple(m1.shape), tuple(m2.shape)]
+        shapes: list[Tuple[int, ...]] = [tuple(m1.shape), tuple(m2.shape)]
 
         # compute self partials
         new_partial: Tensor
