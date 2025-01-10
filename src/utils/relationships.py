@@ -49,9 +49,29 @@ def grad_fn_map(grad_fn: AutogradFunction) -> Type:
     if type(grad_fn) is type(aux.grad_fn):
         XAF_class = XAF.PermuteXBackward0
 
-    # TENSOR OPERATIONS
+    # PRODUCTS
 
-    # tensor hadamard product, tensor scalar product, tensor sum
+    # *, torch.mul, torch.multiply, torch.Tensor.mul
+    aux = torch.mul(input=TB, other=TB)
+    if type(grad_fn) is type(aux.grad_fn):
+        XAF_class = XAF.MulXBackward0
+
+    # torch.prod, torch.Tensor.prod
+    aux = torch.prod(input=TB)
+    if type(grad_fn) is type(aux.grad_fn):
+        XAF_class = XAF.ProdXBackward0
+
+    # SUMMATIONS
+
+    # +, torch.add, torch.Tensor.add
+    aux = torch.add(input=TB, other=TB)
+    if type(grad_fn) is type(aux.grad_fn):
+        XAF_class = XAF.AddXBackward0
+
+    # torch.sum, torch.Tensor.sum
+    aux = torch.sum(input=TB)
+    if type(grad_fn) is type(aux.grad_fn):
+        XAF_class = XAF.SumXBackward0
 
     # MATRIX MUTIPLICATION
 

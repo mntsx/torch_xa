@@ -97,7 +97,7 @@ def _launch_backward(
     order: int,
     target: Optional[Tensor] = None,
     configurations: list[object] = [],
-) -> Superset:
+) -> Graph:
 
     assert isinstance(graph, Graph)
     assert isinstance(order, int), "order must be a possitive integer."

@@ -20,7 +20,7 @@ class ViewXBackward0(ExtendedAutogradFunction):
         integral: bool = 0 in self._output_registry
         return integral
 
-    def _get_context(self) -> Tuple[int, ...]:
+    def _get_context(self) -> Tuple[Tuple[int, ...]]:
         saved_self_sym_sizes: Tuple[int, ...] = self._grad_fn._saved_self_sym_sizes
         return saved_self_sym_sizes
 

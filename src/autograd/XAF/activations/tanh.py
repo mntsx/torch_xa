@@ -21,9 +21,9 @@ class TanhXBackward0(ExtendedAutogradFunction):
         integral: bool = 0 in self._output_registry
         return integral
 
-    def _get_context(self) -> Tensor:
+    def _get_context(self) -> Tuple[Tensor]:
         saved_result: Tensor = self._grad_fn._saved_result
-        return saved_result
+        return (saved_result,)
 
     def _differentiation(
         self, shaped_output_partials: ShapedPartials, idx: int
