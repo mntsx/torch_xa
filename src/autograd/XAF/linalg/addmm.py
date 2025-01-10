@@ -8,8 +8,8 @@ import torch
 from torch import Tensor
 
 # Internal dependencies
-from src.autograd.engine.backprop.contraction import contractor
-from src.autograd.engine.backprop.derivation import calculate_n_order_partial, SumGroup
+from src.autograd.engine.backprop import contractor
+from src.autograd.engine.symbolic.derivation import calculate_n_order_partial, SumGroup
 from src.autograd.XAF.base import ExtendedAutogradFunction
 from src.utils.types import AutogradFunction, ShapedPartials, Partials
 

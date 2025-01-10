@@ -27,6 +27,21 @@ def construct_nd_identity(
     return IDn.view(*([n] * dims))
 
 
+def diagonalize(flat_tensor: Tensor, dims: int) -> Tensor:
+
+    n: int = flat_tensor.numel()
+    size: int = n**dims
+    IDn: Tensor = torch.zeros((size,), dtype=flat_tensor.dtype)
+    idx: Tensor = torch.arange(0, n)
+    factor: int = 0
+    for i in range(dims):
+        factor += n**i
+    idx *= factor
+    IDn[idx] = flat_tensor
+
+    return IDn.view(*([n] * dims))
+
+
 def einsum(*args: list[Union[list[int], Tensor]]) -> Tensor:
     tensor: Tensor = torch.einsum(*args)
     return tensor

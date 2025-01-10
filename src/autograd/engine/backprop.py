@@ -7,7 +7,7 @@ from typing import Optional, Tuple, Union
 from torch import Tensor
 
 # Internal dependencies
-from src.autograd.engine.backprop.derivation import Partial, SumGroup
+from src.autograd.engine.symbolic.derivation import Partial, SumGroup
 from src.tensors.functional import construct_nd_identity, einsum
 
 
@@ -111,7 +111,7 @@ def contractor(
                     f"Current accum shape={accum.shape}, "
                     f"new tensor shape={result_tensor.shape}"
                 )
-            accum = accum + result_tensor
+            accum += result_tensor
 
     if accum is None:
         raise RuntimeError("No products found in the expression, nothing to contract.")
