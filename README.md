@@ -130,7 +130,7 @@ The **torch_xa** package offers two primary approaches for launching the extende
 
 ## Testing
 
-This repository includes a suite of tests to verify the correctness of various components within **torch_xa**. To run the tests, execute:
+This repository includes a suite of tests to verify the correctness of various components within **torch_xa**. To run the tests, navigate to the `tests` directory and execute:
 
 ```bash
 pytest .
