@@ -4,10 +4,11 @@
 from typing import Tuple
 
 # PyTorch dependencies
+from torch import Tensor
 
 # Internal dependencies
 from src.autograd.XAF.base import ExtendedAutogradFunction
-from src.utils.types import AutogradFunction, ShapedPartials
+from src.utils.types import AutogradFunction, ShapedPartials, Partials
 
 
 class PermuteXBackward0(ExtendedAutogradFunction):
@@ -27,5 +28,44 @@ class PermuteXBackward0(ExtendedAutogradFunction):
     def _differentiation(
         self, shaped_output_partials: ShapedPartials, idx: int
     ) -> None:
-        raise NotImplementedError("PermuteXBackward0 is not implemented.")
+        assert idx == 0
+
+        dims: Tuple[int, ...] = self._get_context()[0]
+
+        output_partials: Partials = shaped_output_partials[0]
+        output_shape: Tuple[int, ...] = shaped_output_partials[1]
+        assert len(output_partials) == self._order
+        assert len(output_shape) == len(dims)
+
+        multipartials: list[list[Tensor]] = [[]]
+        multishapes: list[Tuple[int, ...]] = []
+
+        for i, partial in enumerate(output_partials):
+
+            # obtain reshape
+            graph_output_numel: int = output_partials[0].shape[0]
+            reshape: Tuple[int, ...] = (graph_output_numel,) + (i + 1) * output_shape
+
+            # obtain permutation
+            permutation: list[int] = [0 for _ in dims]
+            for index, value in enumerate(dims):
+                permutation[value] = index
+
+            # obtain full permutation
+            pointer = 1
+            perm_list: list[int] = [0]
+            for _ in range(i + 1):
+                perm_list.extend([d + pointer for d in permutation])
+                pointer += len(permutation)
+
+            reshaped_partial: Tensor = partial.view(size=reshape)
+            permuted_partial: Tensor = reshaped_partial.permute(dims=tuple(perm_list))
+            unshaped_partial: Tensor = permuted_partial.view(size=tuple(partial.shape))
+            unshaped_partial = unshaped_partial.contiguous()
+
+            multishapes = [(*[output_shape[d] for d in permutation],)]
+            multipartials[0].append(unshaped_partial)
+
+        self._update_multipartials(multipartials=multipartials, shapes=multishapes)
+
         return None

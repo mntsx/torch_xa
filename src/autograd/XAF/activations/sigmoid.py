@@ -7,6 +7,8 @@ from typing import Tuple
 from torch import Tensor
 
 # Internal dependencies
+from src.autograd.engine.backprop import hadamard
+from src.autograd.engine.symbolic.derivation import calculate_n_order_partial, SumGroup
 from src.autograd.engine.symbolic.polinomial import (
     poly_add,
     poly_derivative,
@@ -14,7 +16,6 @@ from src.autograd.engine.symbolic.polinomial import (
     poly_var_mul,
 )
 from src.autograd.XAF.base import ExtendedAutogradFunction
-from src.tensors.functional import diagonalize
 from src.utils.types import AutogradFunction, ShapedPartials, Partials
 
 
@@ -98,25 +99,34 @@ class SigmoidXBackward0(ExtendedAutogradFunction):
         shaped_output_partials = self._unbroadcast_partials(
             shaped_partials=shaped_output_partials,
             output_shape=expected_output_shape,
+            mode="sum",
         )
         output_partials: Partials = shaped_output_partials[0]
         output_shape: Tuple[int, ...] = shaped_output_partials[1]
         assert len(output_partials) == self._order
 
         multipartials: list[list[Tensor]] = [[]]
-        shapes: list[Tuple[int, ...]] = [output_shape]
+        multishapes: list[Tuple[int, ...]] = [output_shape]
+        expressions: list[SumGroup]
+        expressions = [calculate_n_order_partial(n=(n + 1)) for n in range(self._order)]
+
+        # compute internal partials
+        derivatives: list[Tensor] = list()
+        for order in range(1, self._order + 1):
+            derivative: Tensor = sigmoid_derivate(tensor=result.flatten(), n=order)
+            derivatives.append(derivative)
 
         # compute partials
-        new_partial: Tensor
-        for i, partial in enumerate(output_partials):
-
-            derivative: Tensor = sigmoid_derivate(tensor=result.flatten(), n=(i + 1))
-            diagonal_derivative: Tensor = diagonalize(
-                flat_tensor=derivative, dims=(i + 1)
+        pretensors: Tuple[Tensor, ...] = output_partials
+        subtensors: Tuple[Tensor, ...] = tuple(derivatives)
+        for expression in expressions:
+            contracted_tensor = hadamard(
+                pretensors=pretensors,
+                subtensors=subtensors,
+                expression=expression,
             )
-            new_partial = partial * diagonal_derivative.unsqueeze(0)
-            multipartials[0].append(new_partial)
+            multipartials[0].append(contracted_tensor)
 
-        self._update_multipartials(multipartials=multipartials, shapes=shapes)
+        self._update_multipartials(multipartials=multipartials, shapes=multishapes)
 
         return None

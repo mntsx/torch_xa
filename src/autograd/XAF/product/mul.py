@@ -8,6 +8,8 @@ import torch
 from torch import Tensor
 
 # Internal dependencies
+from src.autograd.engine.backprop import hadamard
+from src.autograd.engine.symbolic.derivation import calculate_n_order_partial, SumGroup
 from src.autograd.XAF.base import ExtendedAutogradFunction
 from src.utils.types import AutogradFunction, ShapedPartials, Partials
 
@@ -50,40 +52,67 @@ class MulXBackward0(ExtendedAutogradFunction):
         output_shape: Tuple[int, ...] = shaped_output_partials[1]
         assert len(output_partials) == self._order
 
+        derivative: Tensor
+        derivatives: list[Tensor] = []
         multipartials: list[list[Tensor]] = [[], []]
-        shapes: list[Tuple[int, ...]] = [tuple(m1.shape), tuple(m2.shape)]
+        multishapes: list[Tuple[int, ...]] = [tuple(m1.shape), tuple(m2.shape)]
+        expressions: list[SumGroup]
+        expressions = [calculate_n_order_partial(n=n + 1) for n in range(self._order)]
+
+        # compute self internal partials
+        derivatives = list()
+        broadcasted_m2: Tensor = m2.broadcast_to(size=output_shape)
+        for order in range(1, self._order + 1):
+            if order == 1:
+                derivative = broadcasted_m2.flatten()
+            else:
+                derivative = torch.zeros(size=(broadcasted_m2.numel(),))
+            derivatives.append(derivative)
 
         # compute self partials
-        new_partial: Tensor
-        for i, partial in enumerate(output_partials):
-            if i == 0:
-                broadcasted_m2: Tensor = torch.broadcast_to(input=m2, size=output_shape)
-                new_partial = partial * broadcasted_m2.flatten().unsqueeze(0)
-            else:
-                new_partial = torch.zeros_like(partial)
-            multipartials[0].append(new_partial)
+        pretensors: Tuple[Tensor, ...]
+        subtensors: Tuple[Tensor, ...]
+        pretensors = output_partials
+        subtensors = tuple(derivatives)
+        for expression in expressions:
+            contracted_tensor: Tensor = hadamard(
+                pretensors=pretensors,
+                subtensors=subtensors,
+                expression=expression,
+            )
+            multipartials[0].append(contracted_tensor)
         multipartials[0] = list(
             self._unbroadcast_partials(
-                shaped_partials=(multipartials[0], output_shape),
-                output_shape=m1.shape,
+                shaped_partials=(multipartials[0], output_shape), output_shape=m1.shape
             )[0]
         )
+
+        # compute other internal partials
+        derivatives = list()
+        broadcasted_m1: Tensor = m1.broadcast_to(size=output_shape)
+        for order in range(1, self._order + 1):
+            if order == 1:
+                derivative = broadcasted_m1.flatten()
+            else:
+                derivative = torch.zeros(size=(broadcasted_m1.numel(),))
+            derivatives.append(derivative)
 
         # compute other partials
-        for i, partial in enumerate(output_partials):
-            if i == 0:
-                broadcasted_m1: Tensor = torch.broadcast_to(input=m1, size=output_shape)
-                new_partial = partial * broadcasted_m1.flatten().unsqueeze(0)
-            else:
-                new_partial = torch.zeros_like(partial)
-            multipartials[1].append(new_partial)
+        pretensors = output_partials
+        subtensors = tuple(derivatives)
+        for expression in expressions:
+            contracted_tensor = hadamard(
+                pretensors=pretensors,
+                subtensors=subtensors,
+                expression=expression,
+            )
+            multipartials[1].append(contracted_tensor)
         multipartials[1] = list(
             self._unbroadcast_partials(
-                shaped_partials=(multipartials[1], output_shape),
-                output_shape=m2.shape,
+                shaped_partials=(multipartials[1], output_shape), output_shape=m2.shape
             )[0]
         )
 
-        self._update_multipartials(multipartials=multipartials, shapes=shapes)
+        self._update_multipartials(multipartials=multipartials, shapes=multishapes)
 
         return None

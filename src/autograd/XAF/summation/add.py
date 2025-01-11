@@ -8,6 +8,8 @@ import torch
 from torch import Tensor
 
 # Internal dependencies
+from src.autograd.engine.backprop import hadamard
+from src.autograd.engine.symbolic.derivation import calculate_n_order_partial, SumGroup
 from src.autograd.XAF.base import ExtendedAutogradFunction
 from src.utils.types import AutogradFunction, ShapedPartials, Partials
 
@@ -36,26 +38,56 @@ class AddXBackward0(ExtendedAutogradFunction):
         output_shape: Tuple[int, ...] = shaped_output_partials[1]
         assert len(output_partials) == self._order
 
+        derivative: Tensor
+        derivatives: list[Tensor]
+        output_numel: int = shaped_output_partials[0][0].shape[1]
         multipartials: list[list[Tensor]] = [[], []]
-        shapes: list[Tuple[int, ...]] = [output_shape, output_shape]
+        multishapes: list[Tuple[int, ...]] = [output_shape, output_shape]
+        expressions: list[SumGroup]
+        expressions = [calculate_n_order_partial(n=n + 1) for n in range(self._order)]
 
-        # compute input partials
-        new_partial: Tensor
-        for i, partial in enumerate(output_partials):
-            if i == 0:
-                new_partial = partial.clone()
+        # compute other internal partials
+        derivatives = list()
+        for order in range(1, self._order + 1):
+            if order == 1:
+                derivative = torch.ones(size=(output_numel,))
             else:
-                new_partial = torch.zeros_like(partial)
-            multipartials[0].append(new_partial)
+                derivative = torch.zeros(size=(output_numel,))
+            derivatives.append(derivative)
 
         # compute other partials
-        for i, partial in enumerate(output_partials):
-            if i == 0:
-                new_partial = alpha * partial
-            else:
-                new_partial = torch.zeros_like(partial)
-            multipartials[1].append(new_partial)
+        pretensors: Tuple[Tensor, ...]
+        subtensors: Tuple[Tensor, ...]
+        pretensors = output_partials
+        subtensors = tuple(derivatives)
+        for expression in expressions:
+            contracted_tensor: Tensor = hadamard(
+                pretensors=pretensors,
+                subtensors=subtensors,
+                expression=expression,
+            )
+            multipartials[0].append(contracted_tensor)
 
-        self._update_multipartials(multipartials=multipartials, shapes=shapes)
+        # compute other internal partials
+        derivatives = list()
+        for order in range(1, self._order + 1):
+            if order == 1:
+                derivative = alpha * torch.ones(size=(output_numel,))
+            else:
+                derivative = torch.zeros(size=(output_numel,))
+            derivatives.append(derivative)
+
+        # compute other partials
+        pretensors = output_partials
+        subtensors = tuple(derivatives)
+        for expression in expressions:
+            contracted_tensor = hadamard(
+                pretensors=pretensors,
+                subtensors=subtensors,
+                expression=expression,
+            )
+            multipartials[1].append(contracted_tensor)
+
+        self._update_multipartials(multipartials=multipartials, shapes=multishapes)
 
         return None

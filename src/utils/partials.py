@@ -39,20 +39,37 @@ def get_backward_idx(tensor: torch.Tensor) -> Optional[int]:
 
 
 def sum_partials(partials_list: list[ShapedPartials]) -> ShapedPartials:
-    assert len(set([len(p) for p in partials_list])) == 1
-    sum_list: list[Tensor] = []
-    for i, _ in enumerate(partials_list[0]):
-        for j, _ in enumerate(partials_list):
-            partial: Tensor
-            if j == 0:
-                partial = partials_list[0][0][i]
-            else:
-                partial += partials_list[j][0][i]
-        sum_list.append(partial)
-    partials: Partials = tuple(sum_list)
-    shape: Tuple[int, ...] = partials_list[0][1]
-    shaped_partials: ShapedPartials = (partials, shape)
-    return shaped_partials
+    """
+    Sums a list of ShapedPartials by summing corresponding Partials tensors.
+
+    Args:
+        partials_list (List[ShapedPartials]): A list of ShapedPartials to be summed.
+
+    Returns:
+        ShapedPartials: The summed ShapedPartials.
+    """
+    if not partials_list:
+        raise ValueError("The partials_list cannot be empty.")
+
+    # Ensure all ShapedPartials have the same number of Partials
+    num_partials_set: set[int] = {len(p[0]) for p in partials_list}
+    if len(num_partials_set) != 1:
+        raise ValueError("All ShapedPartials must have the same number of Partials.")
+
+    # Ensure all ShapedPartials have the same shape
+    shapes_set: set[Tuple[int, ...]] = {p[1] for p in partials_list}
+    if len(shapes_set) != 1:
+        raise ValueError("All ShapedPartials must have the same shape.")
+
+    # Use zip to aggregate corresponding Partials and sum them
+    aggregated_partials = zip(*(p[0] for p in partials_list))
+
+    summed_partials = tuple(sum(tensor_group) for tensor_group in aggregated_partials)
+
+    # Retrieve the common shape from the first element
+    common_shape: Tuple[int] = partials_list[0][1]
+
+    return (summed_partials, common_shape)
 
 
 def unbroadcast_partials(

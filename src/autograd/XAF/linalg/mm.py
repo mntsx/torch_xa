@@ -66,31 +66,33 @@ class MmXBackward0(ExtendedAutogradFunction):
 
         expected_output_shape: Tuple[int, ...] = (m1_sizes[0], m2_sizes[1])
         shaped_output_partials = self._unbroadcast_partials(
-            shaped_partials=shaped_output_partials, output_shape=expected_output_shape
+            shaped_partials=shaped_output_partials,
+            output_shape=expected_output_shape,
+            mode="sum",
         )
         output_partials: Partials = shaped_output_partials[0]
         output_shape: Tuple[int, ...] = shaped_output_partials[1]
         assert len(output_partials) == self._order
 
         multipartials: list[list[Tensor]] = [[], []]
-        shapes: list[Tuple[int, ...]] = [m1_sizes, m2_sizes]
+        multishapes: list[Tuple[int, ...]] = [m1_sizes, m2_sizes]
         expressions: list[SumGroup]
         expressions = [calculate_n_order_partial(n=n + 1) for n in range(self._order)]
 
         # retrieve some data
+        internal_partial: Tensor
         internal_partials: list[Tensor]
-        size: Tuple[int, ...]
+        shape: Tuple[int, ...]
         graph_output_numel: int = output_partials[0].shape[0]
 
         # compute m1 internal partials
         internal_partials = list()
         for order in range(1, self._order + 1):
-            internal_partial: Tensor
             if order == 1:
                 internal_partial = m2.T
             else:
-                size = (m2_sizes[1], *[m2_sizes[0] for _ in range(order)])
-                internal_partial = torch.zeros(size=size)
+                shape = (m2_sizes[1], *[m2_sizes[0] for _ in range(order)])
+                internal_partial = torch.zeros(size=shape)
             internal_partials.append(internal_partial)
 
         # compute m1 partials
@@ -99,8 +101,8 @@ class MmXBackward0(ExtendedAutogradFunction):
         contracted_tensor: Tensor
         aux: list[Tensor] = list()
         for i, partial in enumerate(output_partials):
-            size = (partial.shape[0], *(list(output_shape) * (i + 1)))
-            aux.append(partial.view(size=size))
+            shape = (graph_output_numel, *(list(output_shape) * (i + 1)))
+            aux.append(partial.view(size=shape))
         pretensors = tuple(aux)
         subtensors = tuple(internal_partials)
         for i, expression in enumerate(expressions):
@@ -108,22 +110,21 @@ class MmXBackward0(ExtendedAutogradFunction):
                 pretensors=pretensors,
                 subtensors=subtensors,
                 expression=expression,
-                batch=True,
+                batch=(True, False),
             )
             dual_numel: int = m1_sizes[0] * m2_sizes[0]
-            size = (graph_output_numel, *[dual_numel for _ in range(i + 1)])
-            multipartials[0].append(contracted_tensor.view(size=size))
+            shape = (graph_output_numel, *[dual_numel for _ in range(i + 1)])
+            multipartials[0].append(contracted_tensor.view(size=shape))
 
         # compute m2 internal partials
         internal_partials = list()
         for order in range(1, self._order + 1):
-            internal_partial: Tensor
             if order == 1:
                 internal_partial = m1
             else:
-                size: Tuple[int, ...]
-                size = (m1_sizes[0], *[m1_sizes[1] for _ in range(order)])
-                internal_partial = torch.zeros(size=size)
+                shape: Tuple[int, ...]
+                shape = (m1_sizes[0], *[m1_sizes[1] for _ in range(order)])
+                internal_partial = torch.zeros(size=shape)
             internal_partials.append(internal_partial)
 
         # compute m2 partials
@@ -140,12 +141,12 @@ class MmXBackward0(ExtendedAutogradFunction):
                 pretensors=pretensors,
                 subtensors=subtensors,
                 expression=expression,
-                batch=True,
+                batch=(True, False),
             )
             dual_numel: int = m1_sizes[1] * m2_sizes[1]
-            size = (graph_output_numel, *[dual_numel for _ in range(i + 1)])
-            multipartials[1].append(contracted_tensor.view(size=size))
+            shape = (graph_output_numel, *[dual_numel for _ in range(i + 1)])
+            multipartials[1].append(contracted_tensor.view(size=shape))
 
-        self._update_multipartials(multipartials=multipartials, shapes=shapes)
+        self._update_multipartials(multipartials=multipartials, shapes=multishapes)
 
         return None

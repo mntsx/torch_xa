@@ -151,10 +151,10 @@ class Node:
         preXAFs: set[Type[ExtendedAutogradFunction]]
         preXAFs = set([node.XAF for node in self._prenodes])
         prepartials_list: list[ShapedPartials] = list()
-        for preXAF in sorted(preXAFs):
+        for preXAF in sorted(preXAFs, key=lambda fn: str(fn)):  # type(fn).__name__
             preXAF_posidx: int = self._get_preXAF_posidx(preXAF=preXAF)
             prepartials_list.append(preXAF.partials[preXAF_posidx])
-        prepartials = sum_partials(partials_list=prepartials_list)
+        prepartials: ShapedPartials = sum_partials(partials_list=prepartials_list)
         # gc already collected partials
         for node in self._prenodes:
             node.close()
@@ -282,7 +282,7 @@ class Graph:
     def clear_partials(self) -> None:
         for node in self.leafs:
             if node.active and node.is_leaf and "variable" in dir(node.grad_fn):
-                if "partials" in dir(node.grad_fn.variable):
+                if "ngrad" in dir(node.grad_fn.variable):
                     node.close()
         return None
 
@@ -292,14 +292,14 @@ class Graph:
                 partials: Union[None, Partials] = None
                 if node.partials is not None:
                     partials = node.partials[0][0]
-                setattr(node.grad_fn.variable, "partials", partials)
+                setattr(node.grad_fn.variable, "ngrad", partials)
         return None
 
     def remove_partials(self) -> None:
         for node in self.leafs:
             if node.is_leaf and "variable" in dir(node.grad_fn):
-                if "partials" in dir(node.grad_fn.variable):
-                    delattr(node.grad_fn.variable, "partials")
+                if "ngrad" in dir(node.grad_fn.variable):
+                    delattr(node.grad_fn.variable, "ngrad")
         return None
 
     def prune(self, target: Optional[Tensor] = None) -> None:

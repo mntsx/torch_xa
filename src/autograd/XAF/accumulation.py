@@ -31,13 +31,16 @@ class AccumulateGradX(ExtendedAutogradFunction):
         assert len(shaped_output_partials[0]) == self._order
 
         variable: Tensor = self._get_context()[0]
+
         expected_output_shape: Tuple[int, ...] = tuple(variable.shape)
         shaped_output_partials = self._unbroadcast_partials(
-            shaped_partials=shaped_output_partials, output_shape=expected_output_shape
+            shaped_partials=shaped_output_partials,
+            output_shape=expected_output_shape,
+            mode="sum",
         )
 
         multipartials: list[list[Tensor]] = [list(shaped_output_partials[0])]
-        shapes: list[list[Tensor]] = [shaped_output_partials[1]]
-        self._update_multipartials(multipartials=multipartials, shapes=shapes)
+        multishapes: list[Tuple[int, ...]] = [shaped_output_partials[1]]
+        self._update_multipartials(multipartials=multipartials, shapes=multishapes)
 
         return None
