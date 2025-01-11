@@ -75,7 +75,8 @@ To install **torch_xa** and start exploring higher-order derivatives, follow the
 2. **Non-Scalar Source**:  
    Extended autograd supports partial derivatives from any tensor (not necessarily scalar).
 3. **Dimensional Flattening**:  
-   The gradients calculated by PyTorch's autograd from a scalar only consider the dimensionality of the first partial derivative's conforming dual spaces, maintaining this "intravariable" dimensionality. In contrast, Extended Autograd supports partial derivatives from non-scalar tensors and higher-order derivatives, which requires managing both the output tensor's dimensionality and the "intervariable" dimensions (multiple derivations with respect to the same variable). To simplify derivative identification for users, the "intravariable" dimensionality is flattened.
+   The gradients calculated by PyTorch's autograd from a scalar only consider the dimensionality of the first partial derivative's conforming dual spaces, maintaining this "intravariable" dimensionality. In contrast, Extended Autograd supports partial derivatives from non-scalar tensors and higher-order derivatives, which requires managing both the output tensor's dimensionality and the "intervariable" dimensions (multiple derivations with respect to the same variable). To simplify derivative identification for users, the "intravariable" dimensionality is flattened.  
+   **Note**: This flattening does not hinder usability, as the original dimensionality can be easily recovered when users have access to the input and output tensors.
 
 The **torch_xa** package offers two primary approaches for launching the extended autograd:
 
