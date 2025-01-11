@@ -191,7 +191,9 @@ Below is an overview of the **torch_xa** repository’s structure, illustrating 
 │   │       ├── indexation
 │   │       ├── linalg
 │   │       ├── normalization
+│   │       ├── product
 │   │       ├── reshape
+│   │       ├── summation
 │   │       ├── accumulation.py
 │   │       ├── base.py
 │   │       ├── test.py
