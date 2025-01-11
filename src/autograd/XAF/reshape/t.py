@@ -57,7 +57,8 @@ class TXBackward0(ExtendedAutogradFunction):
 
             reshaped_partial: Tensor = partial.view(size=reshape)
             permuted_partial: Tensor = reshaped_partial.permute(dims=tuple(perm_list))
-            unshaped_partial: Tensor = permuted_partial.view(size=tuple(partial.shape))
+            shape: Tuple[int, ...] = tuple(partial.shape)
+            unshaped_partial: Tensor = permuted_partial.reshape(shape=shape)
             unshaped_partial = unshaped_partial.contiguous()
 
             multipartials[0].append(unshaped_partial)

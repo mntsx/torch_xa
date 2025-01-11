@@ -34,10 +34,13 @@ To install **torch_xa** and start exploring higher-order derivatives, follow the
    Using a virtual environment is recommended to manage dependencies and maintain a clean environment.
 
    - **Windows**:
+
      ```bash
      py -3.12 -m venv .venv
      ```
+
    - **macOS/Linux**:
+
      ```bash
      python3.12 -m venv .venv
      ```
@@ -45,10 +48,13 @@ To install **torch_xa** and start exploring higher-order derivatives, follow the
 3. **Activate the Virtual Environment**
 
    - **Windows**:
+
      ```bash
      .venv\Scripts\activate
      ```
+
    - **macOS/Linux**:
+
      ```bash
      source .venv/bin/activate
      ```
@@ -60,7 +66,7 @@ To install **torch_xa** and start exploring higher-order derivatives, follow the
    cd torch_xa
    pip install -r requirements.txt
    ```
-   
+
    **Note**: Only PyTorch is strictly required to run **torch_xa**. The `pytest` package in `requirements.txt` is used solely for testing purposes.
 
 ---
@@ -70,6 +76,7 @@ To install **torch_xa** and start exploring higher-order derivatives, follow the
 ## User Guide
 
 **Key Differences** between torch native autograd and torch_xa extended autograd:
+
 1. **Multiple First-Order Partial Derivatives**:  
    **torch_xa** allows users to compute the N first-order partial derivatives of the output tensor with respect to each input tensor. These derivatives are returned as a `Tuple[Tensor, ...]`, enabling simultaneous access to multiple gradient directions and facilitating more complex gradient-based computations.
 2. **Non-Scalar Source**:  
@@ -90,6 +97,7 @@ The **torch_xa** package offers two primary approaches for launching the extende
    - **configurations** *(list, optional)*: A list of configuration classes that can modify or extend the default backward process.
 
    **Example Usage**:
+
    ```python
    import torch
    from torch_xa import backward
@@ -121,6 +129,7 @@ The **torch_xa** package offers two primary approaches for launching the extende
    - Access the partial derivatives of non-leaf tensors through `Superset.operator_partials`, since non-leaf tensors cannot be natively accessed within the PyTorch computational graph and, consequently, cannot have the `ngrad` attribute directly assigned to them.
 
    **Example Usage**:
+
    ```python
    import torch
    from torch_xa import Superset
@@ -133,6 +142,7 @@ The **torch_xa** package offers two primary approaches for launching the extende
    
     # ...
    ```
+
  ---
 
  <br>
@@ -190,15 +200,16 @@ The proper functioning of extended autograd with each different PyTorch operator
 
 ### Reshape
 
-- **Permute** (Not Implemented): `torch.permute`, `torch.Tensor.permute`, `torch.Tensor.T`
+- **Permute**: `torch.permute`, `torch.Tensor.permute`, `torch.Tensor.T`
 - **T**: `torch.t`, `torch.Tensor.t`
 - **Transpose**: `torch.transpose`, `torch.Tensor.transpose`
-- **View**: `torch.view`, `torch.Tensor.view`
+- **View** (Not Implemented): `torch.view`, `torch.Tensor.view`
 
 ### Summations
 
 - **Add**: `+`, `torch.add`, `torch.Tensor.add`
-- **Sum** (Not Implemented): `torch.sum`, `torch.Tensor.sum` 
+- **Sum** (Not Implemented): `torch.sum`, `torch.Tensor.sum`
+
 ---
 
 <br>

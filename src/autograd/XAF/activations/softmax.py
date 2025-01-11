@@ -220,7 +220,8 @@ class SoftmaxBackward0(ExtendedAutogradFunction):
             reshaped_partial: Tensor = partial.view(size=tuple(reshape_list))
             permuted_partial: Tensor = reshaped_partial.permute(dims=tuple(perm_list))
             permuted_shapes.append(tuple(permuted_partial.shape))
-            unshaped_partial: Tensor = permuted_partial.view(size=tuple(unshape_list))
+            unshape: Tuple[int, ...] = tuple(unshape_list)
+            unshaped_partial: Tensor = permuted_partial.reshape(shape=unshape)
             aux.append(unshaped_partial)
 
         pretensors = tuple(aux)
@@ -241,7 +242,6 @@ class SoftmaxBackward0(ExtendedAutogradFunction):
                 pointer += ndim
             permuted_tensor: Tensor = reshaped_tensor.permute(dims=tuple(perm_list))
             shape: Tuple[int, ...] = tuple(output_partials[i].shape)
-            # reshaped_tensor: Tensor = contracted_tensor.view(size=shape)
             reshaped_tensor: Tensor = permuted_tensor.reshape(shape=shape)
             reshaped_tensor = reshaped_tensor.contiguous()
             multipartials[0].append(reshaped_tensor)
