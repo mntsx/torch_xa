@@ -167,6 +167,42 @@ Refer to individual scripts within the `benchmarks/` folder for specific instruc
 
 <br>
 
+## Compatibility
+
+The proper functioning of extended autograd with each different PyTorch operator requires the implementation of its corresponding extended backward function. For this reason, extended autograd is only compatible with a subset of PyTorch operators. Below is a list of these operators.
+
+### Activations
+
+- **ReLU**: `torch.relu`, `torch.nn.ReLU`, `torch.nn.functional.relu`
+- **Sigmoid**: `torch.sigmoid`, `torch.nn.Sigmoid`, `torch.nn.functional.sigmoid`
+- **Softmax**: `torch.softmax`, `torch.nn.Softmax`, `torch.nn.functional.softmax`
+- **Tanh**: `torch.tanh`, `torch.nn.Tanh`, `torch.nn.functional.tanh`
+
+### Matrix Multiplication
+
+- **addmm**: `torch.addmm`, `torch.nn.Linear`, `torch.nn.functional.linear`
+- **mm**: `torch.mm`, `torch.matmul`, `torch.nn.Linear`, `torch.nn.functional.linear`
+
+### Products
+
+- **Multiply**: `*`, `torch.mul`, `torch.multiply`, `torch.Tensor.mul`
+- **Product** (Not Implemented): `torch.prod`, `torch.Tensor.prod`
+
+### Reshape
+
+- **Permute** (Not Implemented): `torch.permute`, `torch.Tensor.permute`, `torch.Tensor.T`
+- **T**: `torch.t`, `torch.Tensor.t`
+- **Transpose**: `torch.transpose`, `torch.Tensor.transpose`
+- **View**: `torch.view`, `torch.Tensor.view`
+
+### Summations
+
+- **Add**: `+`, `torch.add`, `torch.Tensor.add`
+- **Sum** (Not Implemented): `torch.sum`, `torch.Tensor.sum` 
+---
+
+<br>
+
 ## Repository Structure
 
 Below is an overview of the **torch_xa** repository’s structure, illustrating how source code, tests, and benchmark scripts are organized. Each directory focuses on a distinct aspect of the extended autograd engine.
