@@ -96,9 +96,9 @@ The **torch_xa** package offers two primary approaches for launching the extende
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    T0 = torch.rand(size=(8,), requires_grad=True)
-    T1 = torch.rand(size=(4, 6), requires_grad=True)
-    T2 = torch.rand(size=(6, 8), requires_grad=True)
+    T0 = torch.rand(size=(8,), requires_grad=True, device=device)
+    T1 = torch.rand(size=(4, 6), requires_grad=True, device=device)
+    T2 = torch.rand(size=(6, 8), requires_grad=True, device=device)
 
     O0 = torch.addmm(input=T0, mat1=T1, mat2=T2)
     O1 = torch.relu(O0)
