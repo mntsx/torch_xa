@@ -94,18 +94,24 @@ The **torch_xa** package offers two primary approaches for launching the extende
    import torch
    from torch_xa import backward
 
-   T0 = torch.rand(size=(4, 6), requires_grad=True)
-   T1 = torch.rand(size=(6, 8), requires_grad=True)
-   O = torch.mm(T0, T1)  # Some operation in the graph
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-   # Compute second-order partial derivatives
-   backward(source=O, order=2)
+    T0 = torch.rand(size=(8,), requires_grad=True)
+    T1 = torch.rand(size=(4, 6), requires_grad=True)
+    T2 = torch.rand(size=(6, 8), requires_grad=True)
 
-   assert T0.ngrad[0].shape == (O.numel(), T0.numel())
-   assert T1.ngrad[0].shape == (O.numel(), T1.numel())
+    O0 = torch.addmm(input=T0, mat1=T1, mat2=T2)
+    O1 = torch.relu(O0)
+    O2 = torch.add(O1, T0)
+    O3 = torch.softmax(O2, dim=1)
 
-   # Optionally, capture the Superset for further graph management
-   superset = backward(source=O, order=2)
+    order = 3
+    backward(source=O3, order=order)
+
+    for i in range(order):
+        assert T0.ngrad[i].shape == (O3.numel(), *((i + 1) * (T0.numel(),) ))
+        assert T1.ngrad[i].shape == (O3.numel(), *((i + 1) * (T1.numel(),) ))
+        assert T2.ngrad[i].shape == (O3.numel(), *((i + 1) * (T2.numel(),) ))
    ```
 
 2. **`torch_xa.Superset` Object**  
@@ -119,15 +125,13 @@ The **torch_xa** package offers two primary approaches for launching the extende
    import torch
    from torch_xa import Superset
 
-   T0 = torch.rand(size=(4, 6), requires_grad=True)
-   T1 = torch.rand(size=(6, 8), requires_grad=True)
-   O = torch.mm(T0, T1)
+    # ...
 
-   superset = Superset.construct(source=O)
-   superset.backward(order=2)
-
-   assert T0.ngrad[0].shape == (O.numel(), T0.numel())
-   assert T1.ngrad[0].shape == (O.numel(), T1.numel())
+    order = 3
+    superset = Superset.construct(source=O3)
+    superset.backward(order=order)
+   
+    # ...
    ```
  ---
 
