@@ -283,5 +283,3 @@ Below is an overview of the **torch_xa** repository’s structure, illustrating 
   - **`partials.py`**: Functions for manipulating `Partial` objects, which represent partial derivatives within the computational graph.
   - **`relationships.py`**: Facilitates links between forward modules and backward modules, ensuring coherent flow of derivative computations.
   - **`types.py`**: Internal type definitions that enhance code readability and maintainability through improved type hinting and structure.
-
----
