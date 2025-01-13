@@ -178,9 +178,10 @@ Below is an overview of the **torch_xa** repository’s structure, illustrating 
 │   │   │   ├── flags.py
 │   │   │   ├── selectors.py
 │   │   ├── engine
-│   │   │   ├── backprop
-│   │   │   │   ├── contraction.py
-│   │   │   │   └── derivation.py
+│   │   │   ├── symbolic
+│   │   │   │   ├── derivation.py
+│   │   │   │   └── polinomial.py
+│   │   │   ├── backprop.py
 │   │   │   ├── graph.py
 │   │   │   ├── interfaces.py
 │   │   │   ├── scheduler.py
@@ -215,12 +216,13 @@ Below is an overview of the **torch_xa** repository’s structure, illustrating 
 
   - **`engine/`**  
     Manages the computational graph.
+    - **`backprop.py`**: It contains the `contract` and `hadamard` functions, which define the two methods for performing the necessary contractions to carry out the backpropagation of partial derivatives.
     - **`graph.py`**: Implements the `Graph` and `Node` classes, which represent the computational graph and its constituent nodes.
     - **`scheduler.py`**: An auxiliary scheduler that manages node transitions in a cascading fashion, ensuring proper order of operations during backpropagation.
     - **`interfaces.py`**: Contains the `backward` function and `Superset` class, which are the primary user-facing APIs for computing partial derivatives and managing the computational graph.
-    - **`backprop/`**: Houses lower-level logic for partial derivative backpropagation.
-      - **`contraction.py`**: Implements functions that perform necessary contractions during the backpropagation of partial derivatives, ensuring efficient computation.
+    - **`symbolic/`**: Includes utility functions and classes to obtain the necessary expressions for calculating the partial derivatives of some PyTorch operators.
       - **`derivation.py`**: Contains classes used to obtain expressions of partial derivatives of a layer with respect to its input through the preceding layer, facilitating higher-order derivative calculations.
+      - **`polinomial.py`**: Contains classes used to obtain the polynomial expressions necessary for calculating the derivatives of certain operators such as the sigmoid or hyperbolic tangent.
 
   - **`configurations/`**  
     Contains additional configurations that can be passed to `backward`.
