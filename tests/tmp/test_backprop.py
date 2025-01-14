@@ -32,6 +32,7 @@ def test_no_batch_order_2_contraction() -> None:
         subtensors=subtensors,
         expression=expression,
         batch=(False, False),
+        device=device,
     )
     assert tuple(contracted_tensor.shape) == (A, B, B)
 
@@ -53,6 +54,7 @@ def test_no_batch_order_3_contraction() -> None:
         subtensors=subtensors,
         expression=expression,
         batch=(False, False),
+        device=device,
     )
     assert tuple(contracted_tensor.shape) == (A, B, B, B)
 
@@ -72,6 +74,7 @@ def test_pre_batched_order_2_contraction() -> None:
         subtensors=subtensors,
         expression=expression,
         batch=(True, False),
+        device=device,
     )
     assert tuple(contracted_tensor.shape) == (A, Bch, B, Bch, B)
 
@@ -93,6 +96,7 @@ def test_pre_batched_order_3_contraction() -> None:
         subtensors=subtensors,
         expression=expression,
         batch=(True, False),
+        device=device,
     )
     assert tuple(contracted_tensor.shape) == (A, Bch, B, Bch, B, Bch, B)
 
@@ -113,6 +117,7 @@ def test_post_batched_order_2_contraction() -> None:
         subtensors=subtensors,
         expression=expression,
         batch=(False, True),
+        device=device,
     )
     assert tuple(contracted_tensor.shape) == (A, Bch, B, Bch, B)
 
@@ -135,6 +140,7 @@ def test_post_batched_order_3_contraction() -> None:
         subtensors=subtensors,
         expression=expression,
         batch=(False, True),
+        device=device,
     )
     assert tuple(contracted_tensor.shape) == (A, Bch, B, Bch, B, Bch, B)
 
@@ -155,6 +161,7 @@ def test_full_batched_order_2_contraction() -> None:
         subtensors=subtensors,
         expression=expression,
         batch=(True, True),
+        device=device,
     )
     assert tuple(contracted_tensor.shape) == (A, Bch, B, Bch, B)
 
@@ -177,6 +184,7 @@ def test_full_batched_order_3_contraction() -> None:
         subtensors=subtensors,
         expression=expression,
         batch=(True, True),
+        device=device,
     )
     assert tuple(contracted_tensor.shape) == (A, Bch, B, Bch, B, Bch, B)
 
@@ -199,6 +207,7 @@ def test_redundant_tensors_contraction() -> None:
         subtensors=subtensors,
         expression=expression,
         batch=(False, False),
+        device=device,
     )
     assert tuple(contracted_tensor.shape) == (A, B, B)
 
@@ -217,6 +226,7 @@ def test_order_2_hadamard() -> None:
         pretensors=pretensors,
         subtensors=subtensors,
         expression=expression,
+        device=device,
     )
     assert tuple(contracted_tensor.shape) == (A, X, X)
 
@@ -237,5 +247,6 @@ def test_order_3_hadamard() -> None:
         pretensors=pretensors,
         subtensors=subtensors,
         expression=expression,
+        device=device,
     )
     assert tuple(contracted_tensor.shape) == (A, X, X, X)
