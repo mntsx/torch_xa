@@ -36,11 +36,11 @@ class MmXBackward0(ExtendedAutogradFunction):
         Tuple[int, ...],
         Tuple[int, ...],
     ]:
-        m1: Tensor = self._grad_fn._saved_self
+        m1: Tensor = self._grad_fn._saved_self.to(device=self._device)
         m1_sizes: Tuple[int, ...] = self.grad_fn._saved_self_sym_sizes
         m1_strides: Tuple[int, ...] = self.grad_fn._saved_self_sym_strides
 
-        m2: Tensor = self._grad_fn._saved_mat2
+        m2: Tensor = self._grad_fn._saved_mat2.to(device=self._device)
         m2_sizes: Tuple[int, ...] = self.grad_fn._saved_mat2_sym_sizes
         m2_strides: Tuple[int, ...] = self.grad_fn._saved_mat2_sym_strides
 
@@ -116,7 +116,7 @@ class MmXBackward0(ExtendedAutogradFunction):
             )
             dual_numel: int = m1_sizes[0] * m2_sizes[0]
             shape = (graph_output_numel, *[dual_numel for _ in range(i + 1)])
-            multipartials[0].append(contracted_tensor.view(size=shape))
+            multipartials[0].append(contracted_tensor.reshape(shape=shape))
 
         # compute m2 internal partials
         internal_partials = list()
@@ -148,7 +148,7 @@ class MmXBackward0(ExtendedAutogradFunction):
             )
             dual_numel: int = m1_sizes[1] * m2_sizes[1]
             shape = (graph_output_numel, *[dual_numel for _ in range(i + 1)])
-            multipartials[1].append(contracted_tensor.view(size=shape))
+            multipartials[1].append(contracted_tensor.reshape(shape=shape))
 
         self._update_multipartials(multipartials=multipartials, shapes=multishapes)
 

@@ -12,14 +12,16 @@ from torch import Tensor
 from src.utils.types import Partials, ShapedPartials
 
 
-def start_partials(tensor: Tensor, order: int) -> ShapedPartials:
+def start_partials(tensor: Tensor, order: int, device: torch.device) -> ShapedPartials:
     partials_list: list[Tensor] = []
     numel: int = tensor.numel()
     for i in range(order):
         if i == 0:
-            partial: Tensor = torch.eye(numel)
+            partial: Tensor = torch.eye(numel, device=device)
         else:
-            partial: Tensor = torch.zeros(size=tuple([numel for _ in range(i + 2)]))
+            partial: Tensor = torch.zeros(
+                size=tuple([numel for _ in range(i + 2)]), device=device
+            )
         partials_list.append(partial)
     partials: Partials = tuple(partials_list)
     shape: Tuple[int, ...] = tuple(tensor.shape)

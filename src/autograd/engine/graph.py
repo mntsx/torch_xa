@@ -192,7 +192,9 @@ class SourceNode(Node):
         assert self._status == S.U
         assert self._order is not None
         prepartials: ShapedPartials
-        prepartials = start_partials(tensor=self._tensor, order=self._order)
+        prepartials = start_partials(
+            tensor=self._tensor, order=self._order, device=self._tensor.device
+        )
         for node in self._prenodes:
             node.close()
         self._XAF(shaped_output_partials=prepartials, idx=self._idx)
