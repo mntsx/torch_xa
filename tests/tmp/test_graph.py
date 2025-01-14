@@ -19,19 +19,19 @@ def test_1() -> None:
     # test no targeted backward
     superset: Superset
     superset = backward(source=d, order=2, configurations=[TestSelector])
-    assert a.ngrad == (T0, T0)
-    assert b.ngrad == (T0, T0)
+    assert a.xgrad == (T0, T0)
+    assert b.xgrad == (T0, T0)
     superset.clear_partials()
-    assert a.ngrad is None
-    assert b.ngrad is None
+    assert a.xgrad is None
+    assert b.xgrad is None
     superset.remove_partials()
-    assert "ngrad" not in dir(a)
-    assert "ngrad" not in dir(b)
+    assert "xgrad" not in dir(a)
+    assert "xgrad" not in dir(b)
 
     # test targeted backward
     superset = backward(source=d, order=2, target=a, configurations=[TestSelector])
-    assert a.ngrad == (T0, T0)
-    assert b.ngrad is None
+    assert a.xgrad == (T0, T0)
+    assert b.xgrad is None
 
 
 def test_2() -> None:
@@ -46,6 +46,6 @@ def test_2() -> None:
     O3: Tensor = torch.softmax(O2, dim=1)
     backward(source=O3, order=3)
 
-    assert T0.ngrad[0].shape == (O3.numel(), T0.numel())
-    assert T1.ngrad[0].shape == (O3.numel(), T1.numel())
-    assert T2.ngrad[0].shape == (O3.numel(), T2.numel())
+    assert T0.xgrad[0].shape == (O3.numel(), T0.numel())
+    assert T1.xgrad[0].shape == (O3.numel(), T1.numel())
+    assert T2.xgrad[0].shape == (O3.numel(), T2.numel())

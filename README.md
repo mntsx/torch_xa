@@ -88,7 +88,7 @@ To install **torch_xa** and start exploring higher-order derivatives, follow the
 The **torch_xa** package offers two primary approaches for launching the extended autograd:
 
 1. **`torch_xa.backward` Function**  
-   This function behaves similarly to PyTorch’s native `torch.Tensor.backward`, but it supports partial derivatives of any order. Upon calling `torch_xa.backward`, **all leaf tensors** in the computational graph (`torch.Tensor.is_leaf = True`) will receive a new attribute `torch.Tensor.ngrad`. Only leaf tensors that have `requires_grad=True` retain these computed partials; all others will keep `partials=None`.
+   This function behaves similarly to PyTorch’s native `torch.Tensor.backward`, but it supports partial derivatives of any order. Upon calling `torch_xa.backward`, **all leaf tensors** in the computational graph (`torch.Tensor.is_leaf = True`) will receive a new attribute `torch.Tensor.xgrad`. Only leaf tensors that have `requires_grad=True` retain these computed partials; all others will keep `partials=None`.
 
    **Function Arguments**:
    - **source** *(torch.Tensor)*: The tensor from which partial derivatives are computed.
@@ -117,16 +117,16 @@ The **torch_xa** package offers two primary approaches for launching the extende
     backward(source=O3, order=order)
 
     for i in range(order):
-        assert T0.ngrad[i].shape == (O3.numel(), *((i + 1) * (T0.numel(),) ))
-        assert T1.ngrad[i].shape == (O3.numel(), *((i + 1) * (T1.numel(),) ))
-        assert T2.ngrad[i].shape == (O3.numel(), *((i + 1) * (T2.numel(),) ))
+        assert T0.xgrad[i].shape == (O3.numel(), *((i + 1) * (T0.numel(),) ))
+        assert T1.xgrad[i].shape == (O3.numel(), *((i + 1) * (T1.numel(),) ))
+        assert T2.xgrad[i].shape == (O3.numel(), *((i + 1) * (T2.numel(),) ))
    ```
 
 2. **`torch_xa.Superset` Object**  
    The `Superset` class provides additional tools for handling the computational graph. It includes a method `Superset.backward` that offers functionality equivalent to `torch_xa.backward`. Moreover, `Superset` allows you to:
-   - Remove the `ngrad` attribute from modified tensors.
+   - Remove the `xgrad` attribute from modified tensors.
    - (De)Activate gradient retention for intermediate tensors.
-   - Access the partial derivatives of non-leaf tensors through `Superset.operator_partials`, since non-leaf tensors cannot be natively accessed within the PyTorch computational graph and, consequently, cannot have the `ngrad` attribute directly assigned to them.
+   - Access the partial derivatives of non-leaf tensors through `Superset.operator_partials`, since non-leaf tensors cannot be natively accessed within the PyTorch computational graph and, consequently, cannot have the `xgrad` attribute directly assigned to them.
 
    **Example Usage**:
 

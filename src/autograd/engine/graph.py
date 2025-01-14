@@ -287,7 +287,7 @@ class Graph:
     def clear_partials(self) -> None:
         for node in self.leafs:
             if node.active and node.is_leaf and "variable" in dir(node.grad_fn):
-                if "ngrad" in dir(node.grad_fn.variable):
+                if "xgrad" in dir(node.grad_fn.variable):
                     node.close()
         return None
 
@@ -297,14 +297,14 @@ class Graph:
                 partials: Union[None, Partials] = None
                 if node.partials is not None:
                     partials = node.partials[0][0]
-                setattr(node.grad_fn.variable, "ngrad", partials)
+                setattr(node.grad_fn.variable, "xgrad", partials)
         return None
 
     def remove_partials(self) -> None:
         for node in self.leafs:
             if node.is_leaf and "variable" in dir(node.grad_fn):
-                if "ngrad" in dir(node.grad_fn.variable):
-                    delattr(node.grad_fn.variable, "ngrad")
+                if "xgrad" in dir(node.grad_fn.variable):
+                    delattr(node.grad_fn.variable, "xgrad")
         return None
 
     def prune(self, target: Optional[Tensor] = None) -> None:
