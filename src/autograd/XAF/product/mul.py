@@ -16,8 +16,10 @@ from src.utils.types import AutogradFunction, ShapedPartials, Partials
 
 class MulXBackward0(ExtendedAutogradFunction):
 
-    def __init__(self, grad_fn: AutogradFunction, order: int) -> None:
-        super().__init__(grad_fn=grad_fn, order=order)
+    def __init__(
+        self, grad_fn: AutogradFunction, order: int, device: torch.device
+    ) -> None:
+        super().__init__(grad_fn=grad_fn, order=order, device=device)
         return None
 
     def integral(self) -> bool:
@@ -66,7 +68,9 @@ class MulXBackward0(ExtendedAutogradFunction):
             if order == 1:
                 derivative = broadcasted_m2.flatten()
             else:
-                derivative = torch.zeros(size=(broadcasted_m2.numel(),))
+                derivative = torch.zeros(
+                    size=(broadcasted_m2.numel(),), device=self._device
+                )
             derivatives.append(derivative)
 
         # compute self partials
@@ -79,6 +83,7 @@ class MulXBackward0(ExtendedAutogradFunction):
                 pretensors=pretensors,
                 subtensors=subtensors,
                 expression=expression,
+                device=self._device,
             )
             multipartials[0].append(contracted_tensor)
         multipartials[0] = list(
@@ -94,7 +99,9 @@ class MulXBackward0(ExtendedAutogradFunction):
             if order == 1:
                 derivative = broadcasted_m1.flatten()
             else:
-                derivative = torch.zeros(size=(broadcasted_m1.numel(),))
+                derivative = torch.zeros(
+                    size=(broadcasted_m1.numel(),), device=self._device
+                )
             derivatives.append(derivative)
 
         # compute other partials
@@ -105,6 +112,7 @@ class MulXBackward0(ExtendedAutogradFunction):
                 pretensors=pretensors,
                 subtensors=subtensors,
                 expression=expression,
+                device=self._device,
             )
             multipartials[1].append(contracted_tensor)
         multipartials[1] = list(

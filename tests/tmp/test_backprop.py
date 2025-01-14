@@ -9,6 +9,7 @@ from torch import Tensor
 from src.autograd.engine.backprop import contractor, hadamard
 from src.autograd.engine.symbolic.derivation import calculate_n_order_partial, SumGroup
 
+device: torch.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 A: int = 2
 B: int = 4
@@ -17,10 +18,10 @@ Bch: int = 8
 
 
 def test_no_batch_order_2_contraction() -> None:
-    partialA1: Tensor = torch.ones(size=(A, X))
-    partialA2: Tensor = torch.ones(size=(A, X, X))
-    partialB1: Tensor = torch.ones(size=(X, B))
-    partialB2: Tensor = torch.ones(size=(X, B, B))
+    partialA1: Tensor = torch.ones(size=(A, X), device=device)
+    partialA2: Tensor = torch.ones(size=(A, X, X), device=device)
+    partialB1: Tensor = torch.ones(size=(X, B), device=device)
+    partialB2: Tensor = torch.ones(size=(X, B, B), device=device)
 
     expression: SumGroup = calculate_n_order_partial(n=2)
 
@@ -36,12 +37,12 @@ def test_no_batch_order_2_contraction() -> None:
 
 
 def test_no_batch_order_3_contraction() -> None:
-    partialA1: Tensor = torch.ones(size=(A, X))
-    partialA2: Tensor = torch.ones(size=(A, X, X))
-    partialA3: Tensor = torch.ones(size=(A, X, X, X))
-    partialB1: Tensor = torch.ones(size=(X, B))
-    partialB2: Tensor = torch.ones(size=(X, B, B))
-    partialB3: Tensor = torch.ones(size=(X, B, B, B))
+    partialA1: Tensor = torch.ones(size=(A, X), device=device)
+    partialA2: Tensor = torch.ones(size=(A, X, X), device=device)
+    partialA3: Tensor = torch.ones(size=(A, X, X, X), device=device)
+    partialB1: Tensor = torch.ones(size=(X, B), device=device)
+    partialB2: Tensor = torch.ones(size=(X, B, B), device=device)
+    partialB3: Tensor = torch.ones(size=(X, B, B, B), device=device)
 
     expression: SumGroup = calculate_n_order_partial(n=3)
 
@@ -57,10 +58,10 @@ def test_no_batch_order_3_contraction() -> None:
 
 
 def test_pre_batched_order_2_contraction() -> None:
-    partialA1: Tensor = torch.ones(size=(A, Bch, X))
-    partialA2: Tensor = torch.ones(size=(A, Bch, X, Bch, X))
-    partialB1: Tensor = torch.ones(size=(X, B))
-    partialB2: Tensor = torch.ones(size=(X, B, B))
+    partialA1: Tensor = torch.ones(size=(A, Bch, X), device=device)
+    partialA2: Tensor = torch.ones(size=(A, Bch, X, Bch, X), device=device)
+    partialB1: Tensor = torch.ones(size=(X, B), device=device)
+    partialB2: Tensor = torch.ones(size=(X, B, B), device=device)
 
     expression: SumGroup = calculate_n_order_partial(n=2)
 
@@ -76,12 +77,12 @@ def test_pre_batched_order_2_contraction() -> None:
 
 
 def test_pre_batched_order_3_contraction() -> None:
-    partialA1: Tensor = torch.ones(size=(A, Bch, X))
-    partialA2: Tensor = torch.ones(size=(A, Bch, X, Bch, X))
-    partialA3: Tensor = torch.ones(size=(A, Bch, X, Bch, X, Bch, X))
-    partialB1: Tensor = torch.ones(size=(X, B))
-    partialB2: Tensor = torch.ones(size=(X, B, B))
-    partialB3: Tensor = torch.ones(size=(X, B, B, B))
+    partialA1: Tensor = torch.ones(size=(A, Bch, X), device=device)
+    partialA2: Tensor = torch.ones(size=(A, Bch, X, Bch, X), device=device)
+    partialA3: Tensor = torch.ones(size=(A, Bch, X, Bch, X, Bch, X), device=device)
+    partialB1: Tensor = torch.ones(size=(X, B), device=device)
+    partialB2: Tensor = torch.ones(size=(X, B, B), device=device)
+    partialB3: Tensor = torch.ones(size=(X, B, B, B), device=device)
 
     expression: SumGroup = calculate_n_order_partial(n=3)
 
@@ -98,10 +99,10 @@ def test_pre_batched_order_3_contraction() -> None:
 
 def test_post_batched_order_2_contraction() -> None:
 
-    partialA1: Tensor = torch.ones(size=(A, X))
-    partialA2: Tensor = torch.ones(size=(A, X, X))
-    partialB1: Tensor = torch.ones(size=(Bch, X, B))
-    partialB2: Tensor = torch.ones(size=(Bch, X, B, B))
+    partialA1: Tensor = torch.ones(size=(A, X), device=device)
+    partialA2: Tensor = torch.ones(size=(A, X, X), device=device)
+    partialB1: Tensor = torch.ones(size=(Bch, X, B), device=device)
+    partialB2: Tensor = torch.ones(size=(Bch, X, B, B), device=device)
 
     expression: SumGroup = calculate_n_order_partial(n=2)
 
@@ -118,12 +119,12 @@ def test_post_batched_order_2_contraction() -> None:
 
 def test_post_batched_order_3_contraction() -> None:
 
-    partialA1: Tensor = torch.ones(size=(A, X))
-    partialA2: Tensor = torch.ones(size=(A, X, X))
-    partialA3: Tensor = torch.ones(size=(A, X, X, X))
-    partialB1: Tensor = torch.ones(size=(Bch, X, B))
-    partialB2: Tensor = torch.ones(size=(Bch, X, B, B))
-    partialB3: Tensor = torch.ones(size=(Bch, X, B, B, B))
+    partialA1: Tensor = torch.ones(size=(A, X), device=device)
+    partialA2: Tensor = torch.ones(size=(A, X, X), device=device)
+    partialA3: Tensor = torch.ones(size=(A, X, X, X), device=device)
+    partialB1: Tensor = torch.ones(size=(Bch, X, B), device=device)
+    partialB2: Tensor = torch.ones(size=(Bch, X, B, B), device=device)
+    partialB3: Tensor = torch.ones(size=(Bch, X, B, B, B), device=device)
 
     expression: SumGroup = calculate_n_order_partial(n=3)
 
@@ -140,10 +141,10 @@ def test_post_batched_order_3_contraction() -> None:
 
 def test_full_batched_order_2_contraction() -> None:
 
-    partialA1: Tensor = torch.ones(size=(A, Bch, X))
-    partialA2: Tensor = torch.ones(size=(A, Bch, X, Bch, X))
-    partialB1: Tensor = torch.ones(size=(Bch, X, B))
-    partialB2: Tensor = torch.ones(size=(Bch, X, B, B))
+    partialA1: Tensor = torch.ones(size=(A, Bch, X), device=device)
+    partialA2: Tensor = torch.ones(size=(A, Bch, X, Bch, X), device=device)
+    partialB1: Tensor = torch.ones(size=(Bch, X, B), device=device)
+    partialB2: Tensor = torch.ones(size=(Bch, X, B, B), device=device)
 
     expression: SumGroup = calculate_n_order_partial(n=2)
 
@@ -160,12 +161,12 @@ def test_full_batched_order_2_contraction() -> None:
 
 def test_full_batched_order_3_contraction() -> None:
 
-    partialA1: Tensor = torch.ones(size=(A, Bch, X))
-    partialA2: Tensor = torch.ones(size=(A, Bch, X, Bch, X))
-    partialA3: Tensor = torch.ones(size=(A, Bch, X, Bch, X, Bch, X))
-    partialB1: Tensor = torch.ones(size=(Bch, X, B))
-    partialB2: Tensor = torch.ones(size=(Bch, X, B, B))
-    partialB3: Tensor = torch.ones(size=(Bch, X, B, B, B))
+    partialA1: Tensor = torch.ones(size=(A, Bch, X), device=device)
+    partialA2: Tensor = torch.ones(size=(A, Bch, X, Bch, X), device=device)
+    partialA3: Tensor = torch.ones(size=(A, Bch, X, Bch, X, Bch, X), device=device)
+    partialB1: Tensor = torch.ones(size=(Bch, X, B), device=device)
+    partialB2: Tensor = torch.ones(size=(Bch, X, B, B), device=device)
+    partialB3: Tensor = torch.ones(size=(Bch, X, B, B, B), device=device)
 
     expression: SumGroup = calculate_n_order_partial(n=3)
 
@@ -182,12 +183,12 @@ def test_full_batched_order_3_contraction() -> None:
 
 def test_redundant_tensors_contraction() -> None:
 
-    partialA1: Tensor = torch.ones(size=(A, X))
-    partialA2: Tensor = torch.ones(size=(A, X, X))
-    partialA3: Tensor = torch.ones(size=(A, X, X, X))
-    partialB1: Tensor = torch.ones(size=(X, B))
-    partialB2: Tensor = torch.ones(size=(X, B, B))
-    partialB3: Tensor = torch.ones(size=(X, B, B, B))
+    partialA1: Tensor = torch.ones(size=(A, X), device=device)
+    partialA2: Tensor = torch.ones(size=(A, X, X), device=device)
+    partialA3: Tensor = torch.ones(size=(A, X, X, X), device=device)
+    partialB1: Tensor = torch.ones(size=(X, B), device=device)
+    partialB2: Tensor = torch.ones(size=(X, B, B), device=device)
+    partialB3: Tensor = torch.ones(size=(X, B, B, B), device=device)
 
     expression: SumGroup = calculate_n_order_partial(n=2)
 
@@ -203,10 +204,10 @@ def test_redundant_tensors_contraction() -> None:
 
 
 def test_order_2_hadamard() -> None:
-    partialA1: Tensor = torch.ones(size=(A, X))
-    partialA2: Tensor = torch.ones(size=(A, X, X))
-    partialB1: Tensor = torch.ones(size=(X,))
-    partialB2: Tensor = torch.ones(size=(X,))
+    partialA1: Tensor = torch.ones(size=(A, X), device=device)
+    partialA2: Tensor = torch.ones(size=(A, X, X), device=device)
+    partialB1: Tensor = torch.ones(size=(X,), device=device)
+    partialB2: Tensor = torch.ones(size=(X,), device=device)
 
     expression: SumGroup = calculate_n_order_partial(n=2)
 
@@ -221,12 +222,12 @@ def test_order_2_hadamard() -> None:
 
 
 def test_order_3_hadamard() -> None:
-    partialA1: Tensor = torch.ones(size=(A, X))
-    partialA2: Tensor = torch.ones(size=(A, X, X))
-    partialA3: Tensor = torch.ones(size=(A, X, X, X))
-    partialB1: Tensor = torch.ones(size=(X,))
-    partialB2: Tensor = torch.ones(size=(X,))
-    partialB3: Tensor = torch.ones(size=(X,))
+    partialA1: Tensor = torch.ones(size=(A, X), device=device)
+    partialA2: Tensor = torch.ones(size=(A, X, X), device=device)
+    partialA3: Tensor = torch.ones(size=(A, X, X, X), device=device)
+    partialB1: Tensor = torch.ones(size=(X,), device=device)
+    partialB2: Tensor = torch.ones(size=(X,), device=device)
+    partialB3: Tensor = torch.ones(size=(X,), device=device)
 
     expression: SumGroup = calculate_n_order_partial(n=3)
 

@@ -16,8 +16,10 @@ from src.utils.types import AutogradFunction, ShapedPartials, Partials
 
 class AddXBackward0(ExtendedAutogradFunction):
 
-    def __init__(self, grad_fn: AutogradFunction, order: int) -> None:
-        super().__init__(grad_fn=grad_fn, order=order)
+    def __init__(
+        self, grad_fn: AutogradFunction, order: int, device: torch.device
+    ) -> None:
+        super().__init__(grad_fn=grad_fn, order=order, device=device)
         return None
 
     def integral(self) -> bool:
@@ -50,9 +52,9 @@ class AddXBackward0(ExtendedAutogradFunction):
         derivatives = list()
         for order in range(1, self._order + 1):
             if order == 1:
-                derivative = torch.ones(size=(output_numel,))
+                derivative = torch.ones(size=(output_numel,), device=self._device)
             else:
-                derivative = torch.zeros(size=(output_numel,))
+                derivative = torch.zeros(size=(output_numel,), device=self._device)
             derivatives.append(derivative)
 
         # compute other partials
@@ -65,6 +67,7 @@ class AddXBackward0(ExtendedAutogradFunction):
                 pretensors=pretensors,
                 subtensors=subtensors,
                 expression=expression,
+                device=self._device,
             )
             multipartials[0].append(contracted_tensor)
 
@@ -72,9 +75,11 @@ class AddXBackward0(ExtendedAutogradFunction):
         derivatives = list()
         for order in range(1, self._order + 1):
             if order == 1:
-                derivative = alpha * torch.ones(size=(output_numel,))
+                derivative = alpha * torch.ones(
+                    size=(output_numel,), device=self._device
+                )
             else:
-                derivative = torch.zeros(size=(output_numel,))
+                derivative = torch.zeros(size=(output_numel,), device=self._device)
             derivatives.append(derivative)
 
         # compute other partials
@@ -85,6 +90,7 @@ class AddXBackward0(ExtendedAutogradFunction):
                 pretensors=pretensors,
                 subtensors=subtensors,
                 expression=expression,
+                device=self._device,
             )
             multipartials[1].append(contracted_tensor)
 

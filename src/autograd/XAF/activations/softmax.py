@@ -15,7 +15,7 @@ from src.autograd.XAF.base import ExtendedAutogradFunction
 from src.utils.types import AutogradFunction, ShapedPartials, Partials
 
 
-def softmax_derivate(input: Tensor, n: int) -> Tensor:
+def softmax_derivate(input: Tensor, n: int, device: torch.device) -> Tensor:
     """
     Computes the n-th derivative of the softmax output with respect to its inputs
     in a fully tensorized manner, returning a tensor of shape:
@@ -52,7 +52,7 @@ def softmax_derivate(input: Tensor, n: int) -> Tensor:
     #    => mesh_idx: shape [n, C, C, ..., C] (n copies of C)
     # ----------------------------------------------------
     mesh: Tuple[Tensor] = torch.meshgrid(
-        *[torch.arange(C, device=s.device) for _ in range(n)], indexing="ij"
+        *[torch.arange(C, device=device) for _ in range(n)], indexing="ij"
     )
     mesh_idx: Tensor = torch.stack(mesh, dim=0)  # shape => [n, C, C, ..., C]
 
@@ -81,12 +81,12 @@ def softmax_derivate(input: Tensor, n: int) -> Tensor:
     # 3) Count how many times each class i appears in (j1..jn)
     #    => counts: shape [C, C, ..., C]
     # ----------------------------------------------------
-    counts: Tensor = torch.zeros(
-        (C,) + partial_shape, dtype=torch.long, device=mesh_idx.device
-    )
+    counts: Tensor = torch.zeros((C,) + partial_shape, dtype=torch.long, device=device)
     # Use scatter_add_ on dim=0 => "class" dimension
     counts.scatter_add_(
-        dim=0, index=mesh_idx, src=torch.ones_like(mesh_idx, dtype=torch.long)
+        dim=0,
+        index=mesh_idx,
+        src=torch.ones_like(mesh_idx, dtype=torch.long, device=device),
     )
     # counts[i, j1, ..., jn] = number of times i appears in (j1..jn).
 
@@ -98,12 +98,12 @@ def softmax_derivate(input: Tensor, n: int) -> Tensor:
     comb_table: list[int] = [math.comb(n, r) for r in range(n + 1)]
     sign_table: list[int] = [(-1) ** (n - r) for r in range(n + 1)]
 
-    comb_t: Tensor = torch.tensor(comb_table, device=s.device, dtype=s.dtype)
-    sign_t: Tensor = torch.tensor(sign_table, device=s.device, dtype=s.dtype)
+    comb_t: Tensor = torch.tensor(comb_table, device=device, dtype=s.dtype)
+    sign_t: Tensor = torch.tensor(sign_table, device=device, dtype=s.dtype)
 
     # The output needs shape => (B, C) + partial_shape, i.e. (n+2) dims total.
     out_shape: Tuple[int, ...] = (B, C) + partial_shape
-    out: Tensor = torch.zeros(out_shape, dtype=s.dtype, device=s.device)
+    out: Tensor = torch.zeros(out_shape, dtype=s.dtype, device=device)
 
     # Loop over each possible "output class" i
     for i in range(C):
@@ -139,8 +139,10 @@ def softmax_derivate(input: Tensor, n: int) -> Tensor:
 
 class SoftmaxBackward0(ExtendedAutogradFunction):
 
-    def __init__(self, grad_fn: AutogradFunction, order: int) -> None:
-        super().__init__(grad_fn=grad_fn, order=order)
+    def __init__(
+        self, grad_fn: AutogradFunction, order: int, device: torch.device
+    ) -> None:
+        super().__init__(grad_fn=grad_fn, order=order, device=device)
         return None
 
     def integral(self) -> bool:
@@ -191,7 +193,9 @@ class SoftmaxBackward0(ExtendedAutogradFunction):
         for order in range(1, self._order + 1):
             permuted_result: Tensor = result.permute(permutation)
             reshaped_result: Tensor = permuted_result.view(batch_size, dim_size)
-            internal_partial = softmax_derivate(input=reshaped_result, n=order)
+            internal_partial = softmax_derivate(
+                input=reshaped_result, n=order, device=self._device
+            )
             internal_partials.append(internal_partial)
 
         # compute partials
@@ -231,6 +235,7 @@ class SoftmaxBackward0(ExtendedAutogradFunction):
                 subtensors=subtensors,
                 expression=expression,
                 batch=(True, True),
+                device=self._device,
             )
             # recover output_partials shape (rearranging dimensions properly)
             reshaped_tensor: Tensor = contracted_tensor.view(permuted_shapes[i])

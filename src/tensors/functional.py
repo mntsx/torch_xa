@@ -9,14 +9,14 @@ from torch import Tensor
 
 
 def construct_nd_identity(
-    n: int, dims: int, dtype: torch.dtype = torch.float32
+    n: int, dims: int, device: torch.device, dtype: torch.dtype = torch.float32
 ) -> Tensor:
     """
     Constructs an n^dims-sized identity shaped as [n, n, ..., n] (dims times).
     For example, construct_nd_identity(2, 2) -> shape [2,2].
     """
     size: int = n**dims
-    IDn: Tensor = torch.zeros((size,), dtype=dtype)
+    IDn: Tensor = torch.zeros((size,), dtype=dtype, device=device)
     idx: Tensor = torch.arange(0, n)
     factor: int = 0
     for i in range(dims):

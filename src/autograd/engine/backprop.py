@@ -16,6 +16,7 @@ def contractor(
     pretensors: Tuple[Tensor, ...],
     subtensors: Tuple[Tensor, ...],
     expression: SumGroup,
+    device: torch.device,
     batch: Optional[Tuple[bool, bool]] = (False, False),
 ) -> Tensor:
 
@@ -58,7 +59,7 @@ def contractor(
             I: Tuple[int, ...] = tuple(range(order + 1, 2 * order + 1))
             TI: Tuple[int, ...] = (*[i for ii in zip(T, I) for i in ii], T[-1])
             batch_size: int = subtensors[0].shape[0]
-            identity = construct_nd_identity(n=batch_size, dims=order)
+            identity = construct_nd_identity(n=batch_size, dims=order, device=device)
             pretensor.ndim == 1 + order
             pretensor = torch.einsum(pretensor, T, identity, I, TI)
         assert pretensor.ndim == 1 + order * (1 + int(bb))
@@ -74,7 +75,7 @@ def contractor(
                 # construct identity of shape
                 n: int = pretensor.shape[2 * p_idx + 1]
                 dims: int = p.order + 1
-                identity = construct_nd_identity(n=n, dims=dims)
+                identity = construct_nd_identity(n=n, dims=dims, device=device)
 
                 # calculate new indices & update pointer
                 new_pointer: int = pointer + p.order
@@ -146,7 +147,7 @@ def contractor(
                 batch_size = (subtensors[0].shape[0],)
             output_size: int = subtensors[0].shape[-1]
             shape: Tuple[int, ...] = (dim0_size, *(mx * (*batch_size, output_size)))
-            accum = torch.zeros(size=shape)
+            accum = torch.zeros(size=shape, device=device)
         else:
             raise RuntimeError(
                 "No products found in the expression, nothing to contract."
@@ -159,6 +160,7 @@ def hadamard(
     pretensors: Tuple[Tensor, ...],
     subtensors: Tuple[Tensor, ...],
     expression: SumGroup,
+    device: torch.device,
 ) -> Tensor:
 
     assert all(T.ndim == 1 for T in subtensors)
@@ -214,7 +216,9 @@ def hadamard(
 
                 # Create identity tensor
                 n: int = subtensor.numel()
-                identity: Tensor = construct_nd_identity(n=n, dims=p.order)
+                identity: Tensor = construct_nd_identity(
+                    n=n, dims=p.order, device=device
+                )
 
                 # calculate new indices & update pointer
                 new_pointer: int = pointer + (p.order - 1)
@@ -261,7 +265,7 @@ def hadamard(
                 dim0_size,
                 *(mx * (output_size,)),
             )
-            accum = torch.zeros(size=shape)
+            accum = torch.zeros(size=shape, device=device)
         else:
             raise RuntimeError(
                 "No products found in the expression, nothing to contract."

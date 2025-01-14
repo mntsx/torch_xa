@@ -4,6 +4,7 @@
 from typing import Tuple
 
 # PyTorch dependencies
+import torch
 from torch import Tensor
 
 # Internal dependencies
@@ -76,8 +77,10 @@ def sigmoid_derivate(tensor: Tensor, n: int) -> Tensor:
 
 class SigmoidXBackward0(ExtendedAutogradFunction):
 
-    def __init__(self, grad_fn: AutogradFunction, order: int) -> None:
-        super().__init__(grad_fn=grad_fn, order=order)
+    def __init__(
+        self, grad_fn: AutogradFunction, order: int, device: torch.device
+    ) -> None:
+        super().__init__(grad_fn=grad_fn, order=order, device=device)
         return None
 
     def integral(self) -> bool:
@@ -119,10 +122,11 @@ class SigmoidXBackward0(ExtendedAutogradFunction):
         pretensors: Tuple[Tensor, ...] = output_partials
         subtensors: Tuple[Tensor, ...] = tuple(derivatives)
         for expression in expressions:
-            contracted_tensor = hadamard(
+            contracted_tensor: Tensor = hadamard(
                 pretensors=pretensors,
                 subtensors=subtensors,
                 expression=expression,
+                device=self._device,
             )
             multipartials[0].append(contracted_tensor)
 

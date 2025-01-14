@@ -13,8 +13,10 @@ from src.utils.types import AutogradFunction, Partials, ShapedPartials
 
 class TestXBackward0(ExtendedAutogradFunction):
 
-    def __init__(self, grad_fn: AutogradFunction, order: int) -> None:
-        super().__init__(grad_fn=grad_fn, order=order)
+    def __init__(
+        self, grad_fn: AutogradFunction, order: int, device: torch.device
+    ) -> None:
+        super().__init__(grad_fn=grad_fn, order=order, device=device)
         return None
 
     def integral(self) -> bool:

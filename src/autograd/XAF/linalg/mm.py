@@ -16,8 +16,10 @@ from src.utils.types import AutogradFunction, ShapedPartials, Partials
 
 class MmXBackward0(ExtendedAutogradFunction):
 
-    def __init__(self, grad_fn: AutogradFunction, order: int) -> None:
-        super().__init__(grad_fn=grad_fn, order=order)
+    def __init__(
+        self, grad_fn: AutogradFunction, order: int, device: torch.device
+    ) -> None:
+        super().__init__(grad_fn=grad_fn, order=order, device=device)
         return None
 
     def integral(self) -> bool:
@@ -91,7 +93,7 @@ class MmXBackward0(ExtendedAutogradFunction):
                 internal_partial = m2.T
             else:
                 shape = (m2_sizes[1], *[m2_sizes[0] for _ in range(order)])
-                internal_partial = torch.zeros(size=shape)
+                internal_partial = torch.zeros(size=shape, device=self._device)
             internal_partials.append(internal_partial)
 
         # compute m1 partials
@@ -110,6 +112,7 @@ class MmXBackward0(ExtendedAutogradFunction):
                 subtensors=subtensors,
                 expression=expression,
                 batch=(True, False),
+                device=self._device,
             )
             dual_numel: int = m1_sizes[0] * m2_sizes[0]
             shape = (graph_output_numel, *[dual_numel for _ in range(i + 1)])
@@ -123,7 +126,7 @@ class MmXBackward0(ExtendedAutogradFunction):
             else:
                 shape: Tuple[int, ...]
                 shape = (m1_sizes[0], *[m1_sizes[1] for _ in range(order)])
-                internal_partial = torch.zeros(size=shape)
+                internal_partial = torch.zeros(size=shape, device=self._device)
             internal_partials.append(internal_partial)
 
         # compute m2 partials
@@ -141,6 +144,7 @@ class MmXBackward0(ExtendedAutogradFunction):
                 subtensors=subtensors,
                 expression=expression,
                 batch=(True, False),
+                device=self._device,
             )
             dual_numel: int = m1_sizes[1] * m2_sizes[1]
             shape = (graph_output_numel, *[dual_numel for _ in range(i + 1)])

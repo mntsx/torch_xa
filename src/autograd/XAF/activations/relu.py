@@ -16,8 +16,10 @@ from src.utils.types import AutogradFunction, ShapedPartials, Partials
 
 class ReluXBackward0(ExtendedAutogradFunction):
 
-    def __init__(self, grad_fn: AutogradFunction, order: int) -> None:
-        super().__init__(grad_fn=grad_fn, order=order)
+    def __init__(
+        self, grad_fn: AutogradFunction, order: int, device: torch.device
+    ) -> None:
+        super().__init__(grad_fn=grad_fn, order=order, device=device)
         return None
 
     def integral(self) -> bool:
@@ -58,7 +60,7 @@ class ReluXBackward0(ExtendedAutogradFunction):
         derivative: Tensor = torch.where(condition=cond, input=t1, other=t0)
         for order in range(1, self._order + 1):
             if order > 1:
-                derivative = torch.zeros_like(derivative)
+                derivative = torch.zeros_like(derivative, device=self._device)
             derivatives.append(derivative)
 
         # compute partials
@@ -69,6 +71,7 @@ class ReluXBackward0(ExtendedAutogradFunction):
                 pretensors=pretensors,
                 subtensors=subtensors,
                 expression=expression,
+                device=self._device,
             )
             multipartials[0].append(contracted_tensor)
 

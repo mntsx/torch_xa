@@ -9,6 +9,7 @@ from itertools import permutations
 from typing import Any, Tuple, Union
 
 # PyTorch dependencies
+import torch
 from torch import Tensor
 
 # Internal dependencies
@@ -29,9 +30,12 @@ class ExtendedAutogradFunction(ABC):
     # Optionally, it can also compute the partials with respect to the
     # layer parameters
 
-    def __init__(self, grad_fn: AutogradFunction, order: int) -> None:
+    def __init__(
+        self, grad_fn: AutogradFunction, order: int, device: torch.device
+    ) -> None:
         self._grad_fn: AutogradFunction = grad_fn
         self._order: int = order
+        self._device: torch.device = device
 
         self._retain_partials: bool = False
         self._multipartials: Union[None, MultiPartials] = None

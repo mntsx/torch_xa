@@ -5,6 +5,7 @@ from enum import Enum
 from typing import Optional, Tuple, Type, Union
 
 # PyTorch dependencies
+import torch
 from torch import Tensor
 
 # Internal dependencies
@@ -49,8 +50,8 @@ class Node:
             self._prenodes.add(prenode)
         return None
 
-    def acquire_XAF(self, order: int, selector: Selector) -> None:
-        self._XAF = selector(grad_fn=self._grad_fn, order=order)
+    def acquire_XAF(self, order: int, selector: Selector, device: torch.device) -> None:
+        self._XAF = selector(grad_fn=self._grad_fn, order=order, device=device)
         return None
 
     def register_XAF_idx(self) -> None:
@@ -212,6 +213,7 @@ class Graph:
 
     def __init__(self) -> None:
         self._source_node: SourceNode
+        self._device: torch.device
         self._nodes: dict[Tuple[AutogradFunction, int], Type[Node]] = dict()
         self._XAFs: dict[AutogradFunction, Type[ExtendedAutogradFunction]] = dict()
 
@@ -232,6 +234,7 @@ class Graph:
     @classmethod
     def construct(cls, source: Tensor) -> "Graph":
         graph: "Graph" = cls()
+        graph._device = source.device
         grad_fn: AutogradFunction = source.grad_fn
         idx: int = get_backward_idx(tensor=source)
         node: SourceNode = SourceNode(grad_fn=grad_fn, idx=idx, tensor=source)
@@ -269,7 +272,7 @@ class Graph:
         if (grad_fn, idx) not in self._nodes:
             self._nodes[(grad_fn, idx)] = node
             if grad_fn not in self._XAFs:
-                node.acquire_XAF(order=order, selector=selector)
+                node.acquire_XAF(order=order, selector=selector, device=self._device)
                 node.register_XAF_idx()
                 self._XAFs[grad_fn] = node.XAF
             else:

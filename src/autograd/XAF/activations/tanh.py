@@ -4,6 +4,7 @@
 from typing import Tuple
 
 # PyTorch dependencies
+import torch
 from torch import Tensor
 
 # Internal dependencies
@@ -60,8 +61,10 @@ def tanh_derivate(tensor: Tensor, n: int) -> Tensor:
 
 class TanhXBackward0(ExtendedAutogradFunction):
 
-    def __init__(self, grad_fn: AutogradFunction, order: int) -> None:
-        super().__init__(grad_fn=grad_fn, order=order)
+    def __init__(
+        self, grad_fn: AutogradFunction, order: int, device: torch.device
+    ) -> None:
+        super().__init__(grad_fn=grad_fn, order=order, device=device)
         return None
 
     def integral(self) -> bool:
@@ -107,6 +110,7 @@ class TanhXBackward0(ExtendedAutogradFunction):
                 pretensors=pretensors,
                 subtensors=subtensors,
                 expression=expression,
+                device=self._device,
             )
             multipartials[0].append(contracted_tensor)
 
