@@ -99,7 +99,6 @@ class SigmoidXBackward0(ExtendedAutogradFunction):
         shaped_output_partials = self._unbroadcast_partials(
             shaped_partials=shaped_output_partials,
             output_shape=expected_output_shape,
-            mode="sum",
         )
         output_partials: Partials = shaped_output_partials[0]
         output_shape: Tuple[int, ...] = shaped_output_partials[1]

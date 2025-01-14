@@ -148,7 +148,7 @@ class SoftmaxBackward0(ExtendedAutogradFunction):
         return integral
 
     def _get_context(self) -> Tuple[Tuple[int, ...], Tensor]:
-        saved_dim: Tuple[int, ...] = self._grad_fn._saved_result._saved_dim
+        saved_dim: Tuple[int, ...] = self._grad_fn._saved_dim
         saved_result: Tensor = self._grad_fn._saved_result
         return (saved_dim, saved_result)
 
@@ -164,7 +164,6 @@ class SoftmaxBackward0(ExtendedAutogradFunction):
         shaped_output_partials = self._unbroadcast_partials(
             shaped_partials=shaped_output_partials,
             output_shape=expected_output_shape,
-            mode="sum",
         )
         output_partials: Partials = shaped_output_partials[0]
         output_shape: Tuple[int, ...] = shaped_output_partials[1]

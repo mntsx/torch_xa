@@ -20,7 +20,7 @@ def test_1() -> None:
     superset: Superset
     superset = backward(source=d, order=2, configurations=[TestSelector])
     assert a.ngrad == (T0, T0)
-    assert b.partials == (T0, T0)
+    assert b.ngrad == (T0, T0)
     superset.clear_partials()
     assert a.ngrad is None
     assert b.ngrad is None

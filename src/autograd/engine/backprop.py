@@ -8,7 +8,7 @@ import torch
 from torch import Tensor
 
 # Internal dependencies
-from src.autograd.engine.symbolic.derivation import Partial, SumGroup, ProductGroup
+from src.autograd.engine.symbolic.derivation import SumGroup, ProductGroup, Partial
 from src.tensors.functional import construct_nd_identity, einsum
 
 

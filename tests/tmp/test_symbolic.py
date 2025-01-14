@@ -3,7 +3,7 @@ import time
 
 # Internal dependencies
 from src.autograd.engine.symbolic.derivation import SumGroup, ProductGroup
-from src.utils.types import Partial
+from src.autograd.engine.symbolic.derivation import Partial
 
 t0: float = time.time()
 

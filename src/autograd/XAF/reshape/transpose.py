@@ -22,8 +22,8 @@ class TransposeXBackward0(ExtendedAutogradFunction):
         return integral
 
     def _get_context(self) -> Tuple[int, int]:
-        saved_dim0: int = self._grad_fn.saved_dim0
-        saved_dim1: int = self._grad_fn.saved_dim1
+        saved_dim0: int = self._grad_fn._saved_dim0
+        saved_dim1: int = self._grad_fn._saved_dim1
         return (saved_dim0, saved_dim1)
 
     def _differentiation(

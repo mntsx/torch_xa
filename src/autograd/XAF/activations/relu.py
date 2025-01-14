@@ -65,7 +65,7 @@ class ReluXBackward0(ExtendedAutogradFunction):
         pretensors: Tuple[Tensor, ...] = output_partials
         subtensors: Tuple[Tensor, ...] = tuple(derivatives)
         for expression in expressions:
-            contracted_tensor = hadamard(
+            contracted_tensor: Tensor = hadamard(
                 pretensors=pretensors,
                 subtensors=subtensors,
                 expression=expression,
