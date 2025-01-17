@@ -181,6 +181,8 @@ The proper functioning of extended autograd with each different PyTorch operator
 ### Activations
 
 - **ReLU**: `torch.relu`, `torch.nn.ReLU`, `torch.nn.functional.relu`
+- **ELU**: `torch.nn.ELU`, `torch.nn.functional.elu`
+- **LeakyReLU**: `torch.nn.LeakyReLU`, `torch.nn.functional.leaky_relu`
 - **Sigmoid**: `torch.sigmoid`, `torch.nn.Sigmoid`, `torch.nn.functional.sigmoid`
 - **Softmax**: `torch.softmax`, `torch.nn.Softmax`, `torch.nn.functional.softmax`
 - **Tanh**: `torch.tanh`, `torch.nn.Tanh`, `torch.nn.functional.tanh`
