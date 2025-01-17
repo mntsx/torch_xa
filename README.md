@@ -193,19 +193,19 @@ The proper functioning of extended autograd with each different PyTorch operator
 ### Products
 
 - **Multiply**: `*`, `torch.mul`, `torch.multiply`, `torch.Tensor.mul`, `torch.nn.functional.dropout`
-- **Product** (Not Implemented): `torch.prod`, `torch.Tensor.prod`
+- **Product**: `torch.prod`, `torch.Tensor.prod`
 
 ### Reshape
 
 - **Permute**: `torch.permute`, `torch.Tensor.permute`, `torch.Tensor.T`
 - **T**: `torch.t`, `torch.Tensor.t`
 - **Transpose**: `torch.transpose`, `torch.Tensor.transpose`
-- **View** (Not Implemented): `torch.view`, `torch.Tensor.view`, `torch.flatten`, `torch.Tensor.flatten`
+- **View**: `torch.view`, `torch.Tensor.view`, `torch.flatten`, `torch.Tensor.flatten`
 
 ### Summations
 
 - **Add**: `+`, `torch.add`, `torch.Tensor.add`
-- **Sum** (Not Implemented): `torch.sum`, `torch.Tensor.sum`
+- **Sum**: `torch.sum`, `torch.Tensor.sum`
 
 ---
 
