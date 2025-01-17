@@ -12,6 +12,7 @@ from torch import Tensor
 from src.autograd.engine.backprop import contractor
 from src.autograd.engine.symbolic.derivation import calculate_n_order_partial, SumGroup
 from src.autograd.XAF.base import ExtendedAutogradFunction
+from src.utils.partials import unbroadcast
 from src.utils.types import AutogradFunction, ShapedPartials, Partials
 
 
@@ -163,7 +164,7 @@ class SoftmaxBackward0(ExtendedAutogradFunction):
         result: Tensor = ctx[1]
 
         expected_output_shape: Tuple[int, ...] = tuple(result.shape)
-        shaped_output_partials = self._unbroadcast_partials(
+        shaped_output_partials = unbroadcast(
             shaped_partials=shaped_output_partials,
             output_shape=expected_output_shape,
         )

@@ -61,6 +61,11 @@ def grad_fn_map(grad_fn: AutogradFunction) -> Type:
     if type(grad_fn) is type(aux.grad_fn):
         XAF_class = XAF.ProdXBackward0
 
+    # torch.prod, torch.Tensor.prod
+    aux = torch.prod(input=TB, dim=1)
+    if type(grad_fn) is type(aux.grad_fn):
+        XAF_class = XAF.ProdXBackward1
+
     # SUMMATIONS
 
     # +, torch.add, torch.Tensor.add
@@ -72,6 +77,11 @@ def grad_fn_map(grad_fn: AutogradFunction) -> Type:
     aux = torch.sum(input=TB)
     if type(grad_fn) is type(aux.grad_fn):
         XAF_class = XAF.SumXBackward0
+
+    # torch.sum, torch.Tensor.sum
+    aux = torch.sum(input=TB, dim=(1,))
+    if type(grad_fn) is type(aux.grad_fn):
+        XAF_class = XAF.SumXBackward1
 
     # MATRIX MUTIPLICATION
 
@@ -91,6 +101,16 @@ def grad_fn_map(grad_fn: AutogradFunction) -> Type:
     aux = torch.nn.functional.relu(TA)
     if type(grad_fn) is type(aux.grad_fn):
         XAF_class = XAF.ReluXBackward0
+
+    # torch.nn.ReLU, torch.nn.functional.relu
+    aux = torch.nn.functional.elu(TA)
+    if type(grad_fn) is type(aux.grad_fn):
+        XAF_class = XAF.EluXBackward0
+
+    # torch.nn.ReLU, torch.nn.functional.relu
+    aux = torch.nn.functional.leaky_relu(TA)
+    if type(grad_fn) is type(aux.grad_fn):
+        XAF_class = XAF.LeakyReluXBackward0
 
     # torch.nn.Sigmoid, torch.nn.functional.sigmoid
     aux = torch.nn.functional.sigmoid(TA)

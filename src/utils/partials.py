@@ -2,6 +2,8 @@
 
 # Standard Library dependencies
 import math
+import warnings
+from itertools import permutations
 from typing import Optional, Tuple, Union
 
 # PyTorch dependencies
@@ -74,7 +76,77 @@ def sum_partials(partials_list: list[ShapedPartials]) -> ShapedPartials:
     return (summed_partials, common_shape)
 
 
-def unbroadcast_partials(
+def unbroadcast(
+    shaped_partials: ShapedPartials, output_shape: Tuple[int, ...]
+) -> ShapedPartials:
+
+    def is_broadcastable(shape: Tuple[int, ...], target: Tuple[int, ...]) -> bool:
+        return all(math.gcd(s, t) == t for s, t in zip(shape, target))
+
+    shape: Tuple[int, ...] = shaped_partials[1]
+    padding: int = max((len(shape) - len(output_shape)), 0)
+    target: Tuple[int, ...] = (1,) * padding + output_shape
+    new_shaped_partials: ShapedPartials
+
+    if shape == target:
+
+        new_shaped_partials = shaped_partials
+
+    elif is_broadcastable(shape=shape, target=target):
+
+        # sumar las dimensiones que sean 1's en target
+        new_shaped_partials = _unbroadcast_aux(
+            shaped_partials=shaped_partials, output_shape=target
+        )
+
+    elif math.gcd(math.prod(shape), math.prod(target)) == math.prod(target):
+
+        # Generate all broadcastable permutations
+        perms = list(permutations(shape))
+        broadcastable_perms: list[Tuple[int, ...]] = [
+            p for p in perms if is_broadcastable(p, target)
+        ]
+
+        if len(broadcastable_perms) == 0:
+            raise ValueError(
+                "XAF found an intractable combination of permutation and broadcasting. "
+                "Consider being more explicit in the arrangement of dimensions."
+            )
+
+        if len(broadcastable_perms) > 1:
+            warnings.warn(
+                "XAF found an ambiguous combination of permutation and broadcasting. "
+                "This can lead to errors in partials computations. Consider being "
+                "more explicit in the arrangement of dimensions.",
+                RuntimeWarning,
+            )
+
+        # select the best attending to 2 criteria:
+        # 1. The fewer swaps the better
+        # 2. Swaps in the last dimensions are better
+        def score(perm: Tuple[int, ...]) -> Tuple[int, int]:
+            movement: int = sum(1 for p, a in zip(perm, target) if p != a)
+            positions: list[int] = [
+                i for i, (p, a) in enumerate(zip(perm, target)) if p != a
+            ]
+            return (movement, sum(positions))
+
+        best_permutation: Tuple[int] = min(broadcastable_perms, key=score)
+        new_shaped_partials = _unbroadcast_aux(
+            shaped_partials=shaped_partials, output_shape=best_permutation
+        )
+
+    else:
+
+        raise ValueError(
+            "XAF found an intractable combination of permutation and broadcasting. "
+            "Consider being more explicit in the arrangement of dimensions."
+        )
+
+    return new_shaped_partials
+
+
+def _unbroadcast_aux(
     shaped_partials: ShapedPartials, output_shape: Tuple[int, ...]
 ) -> ShapedPartials:
 
@@ -93,12 +165,112 @@ def unbroadcast_partials(
             new_view.append(math.prod(new_shape))
             broadcasts.extend([not s == t for s, t in zip(shape, target)])
 
+        if len(new_shape) == 0:
+            new_view = (partial.shape[0], 1)
+            new_shape = (1,)
+
         dims: list[bool] = [i for i, broadcast in enumerate(broadcasts) if broadcast]
         reshaped_partial: Tensor = partial.view(size=tuple(view))
         reshaped_partial = reshaped_partial.sum(dim=tuple(dims))
-        reshaped_partial.view(new_view)
+        reshaped_partial = reshaped_partial.view(new_view)
         list_new_partials.append(reshaped_partial)
 
     new_shaped_partials: ShapedPartials = (tuple(list_new_partials), new_shape)
 
+    assert len(new_shape) > 0, partial.ndim
+
     return new_shaped_partials
+
+
+def unscale(shaped_partials: ShapedPartials, target_numel: int) -> ShapedPartials:
+    """
+    Variant of unbroadcast_partials that *requires* the final shape is exactly
+    (batch_size, target_numel). If no exact subshape can produce 'target_numel'
+    elements, raise an error.
+    """
+    import math
+
+    print([T.shape for T in shaped_partials[0]])
+    print(shaped_partials[1], target_numel)
+
+    shape: Tuple[int, ...] = shaped_partials[1]
+
+    # 1) Find subshape ...
+    target_shape: Tuple[int, ...] = _find_closest_subshape(shape, target_numel)
+    print("Selected subshape:", target_shape)
+    found_numel: int = math.prod(target_shape)
+
+    if found_numel != target_numel:
+        raise ValueError(
+            f"Cannot find any subshape of {shape} whose product is exactly "
+            f"{target_numel}. Closest subshape is {target_shape} with "
+            f"product={found_numel}."
+        )
+
+    list_new_partials: list[Tensor] = []
+    for idx, partial in enumerate(shaped_partials[0]):
+        batch_size: int = partial.shape[0]
+
+        # A) Reshape to (batch_size, *shape)
+        reshaped_partial = partial.view(batch_size, *((idx + 1) * shape))
+
+        # B) Identify dims to reduce
+        broadcast_dims: list[int] = [
+            i + 1
+            for i, (s_dim, t_dim) in enumerate(zip(shape, target_shape))
+            if (t_dim == 1 and s_dim != 1)
+        ]
+
+        # C) Sum/prod
+        if len(broadcast_dims) > 0:
+            reshaped_partial = reshaped_partial.sum(dim=broadcast_dims)
+
+        # D) Reshape to (batch_size, target_numel)
+        final_view: Tuple[int, ...] = (batch_size, *((idx + 1) * (target_numel,)))
+        reshaped_partial: Tensor = reshaped_partial.view(final_view)
+        list_new_partials.append(reshaped_partial)
+
+    new_shaped_partials: ShapedPartials = (tuple(list_new_partials), (target_numel,))
+    return new_shaped_partials
+
+
+def _find_closest_subshape(
+    shape: Tuple[int, ...], target_numel: int
+) -> Tuple[int, ...]:
+    """
+    From `shape`, generate all subshapes obtained by setting some dims to 1.
+    Return the one whose product is >= target_numel and closest to it.
+    If none is >=, return the largest possible (which is the original shape).
+    Subshapes that set left dims to 1 are explored first.
+    """
+    best_subshape: Tuple[int] = shape
+    best_product: int = math.prod(shape)
+
+    def backtrack(i: int, current_shape: list[int]) -> None:
+        nonlocal best_subshape, best_product
+
+        if i == len(shape):
+            current_prod: int = math.prod(current_shape)
+            # We want >= target_numel but as close as possible above it
+            if current_prod >= target_numel:
+                if current_prod < best_product:
+                    best_product = current_prod
+                    best_subshape = tuple(current_shape)
+            return
+
+        # 1) Try setting this dimension to 1
+        original_dim: int = current_shape[i]
+        current_shape[i] = 1
+        backtrack(i + 1, current_shape)
+
+        # 2) Restore and try the original size
+        current_shape[i] = shape[i]
+        backtrack(i + 1, current_shape)
+
+        current_shape[i] = original_dim
+
+    # Start recursive search
+    shape_list = list(shape)
+    backtrack(0, shape_list)
+
+    return best_subshape

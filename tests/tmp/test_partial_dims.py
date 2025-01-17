@@ -164,3 +164,58 @@ def test_11() -> None:
     O: Tensor = T.transpose(dim0=0, dim1=2)
     backward(source=O, order=2)
     assert T.xgrad[0].shape == (O.numel(), T.numel())
+
+
+def test_12() -> None:
+
+    T0: Tensor = torch.rand(size=(4, 4), requires_grad=True)
+    O0: Tensor = T0.sum()
+    backward(source=O0, order=2)
+    assert T0.xgrad[0].shape == (O0.numel(), T0.numel())
+    O0.backward()
+    assert torch.allclose(T0.grad.flatten(), T0.xgrad[0].flatten())
+
+    T1: Tensor = torch.rand(size=(4, 4), requires_grad=True)
+    O1: Tensor = T1.sum(dim=(1,))
+    backward(source=O1, order=2)
+    assert T1.xgrad[0].shape == (O1.numel(), T1.numel())
+
+
+def test_13() -> None:
+
+    T0: Tensor = torch.rand(size=(4, 4), requires_grad=True)
+    O0: Tensor = T0.prod()
+    backward(source=O0, order=2)
+    assert T0.xgrad[0].shape == (O0.numel(), T0.numel())
+
+    O0.backward()
+    assert torch.allclose(T0.grad.flatten(), T0.xgrad[0].flatten())
+
+    T1: Tensor = torch.rand(size=(4, 4), requires_grad=True)
+    O1: Tensor = T1.prod(dim=1)
+    backward(source=O1, order=2)
+    assert T1.xgrad[0].shape == (O1.numel(), T1.numel())
+
+
+def test_14() -> None:
+
+    T0: Tensor = torch.rand(size=(4, 4), requires_grad=True)
+    O0: Tensor = T0.view(size=(4, 1, 4))
+    backward(source=O0, order=2)
+    assert T0.xgrad[0].shape == (O0.numel(), T0.numel())
+
+
+def test_15() -> None:
+
+    T: Tensor = torch.rand(size=(4, 6), requires_grad=True)
+    O: Tensor = torch.nn.functional.elu(T)
+    backward(source=O, order=2)
+    assert T.xgrad[0].shape == (O.numel(), T.numel())
+
+
+def test_16() -> None:
+
+    T: Tensor = torch.rand(size=(4, 6), requires_grad=True)
+    O: Tensor = torch.nn.functional.leaky_relu(T)
+    backward(source=O, order=2)
+    assert T.xgrad[0].shape == (O.numel(), T.numel())

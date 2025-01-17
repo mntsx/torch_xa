@@ -9,6 +9,7 @@ from torch import Tensor
 
 # Internal dependencies
 from src.autograd.XAF.base import ExtendedAutogradFunction
+from src.utils.partials import unbroadcast
 from src.utils.types import AutogradFunction, ShapedPartials, Partials
 
 
@@ -35,7 +36,7 @@ class TXBackward0(ExtendedAutogradFunction):
         assert len(shaped_output_partials[1]) >= 2
 
         expected_output_shape: Tuple[int, ...] = (*shaped_output_partials[1][-2:],)
-        shaped_output_partials = self._unbroadcast_partials(
+        shaped_output_partials = unbroadcast(
             shaped_partials=shaped_output_partials, output_shape=expected_output_shape
         )
         output_partials: Partials = shaped_output_partials[0]

@@ -11,6 +11,7 @@ from torch import Tensor
 from src.autograd.engine.backprop import contractor, hadamard
 from src.autograd.engine.symbolic.derivation import calculate_n_order_partial, SumGroup
 from src.autograd.XAF.base import ExtendedAutogradFunction
+from src.utils.partials import unbroadcast
 from src.utils.types import AutogradFunction, ShapedPartials, Partials
 
 
@@ -66,7 +67,7 @@ class AddmmXBackward0(ExtendedAutogradFunction):
         m2_sizes: Tuple[int, ...] = ctx[6]
 
         expected_output_shape: Tuple[int, ...] = (m1_sizes[0], m2_sizes[1])
-        shaped_output_partials = self._unbroadcast_partials(
+        shaped_output_partials = unbroadcast(
             shaped_partials=shaped_output_partials, output_shape=expected_output_shape
         )
         output_partials: Partials = shaped_output_partials[0]

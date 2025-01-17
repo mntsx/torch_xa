@@ -8,59 +8,14 @@ import torch
 from torch import Tensor
 
 # Internal dependencies
-from src.autograd.engine.backprop import hadamard
 from src.autograd.engine.symbolic.derivation import calculate_n_order_partial, SumGroup
-from src.autograd.engine.symbolic.polinomial import (
-    poly_derivative,
-    poly_eval,
-    poly_var_mul,
-)
+from src.autograd.engine.backprop import hadamard
 from src.autograd.XAF.base import ExtendedAutogradFunction
 from src.utils.partials import unbroadcast
 from src.utils.types import AutogradFunction, ShapedPartials, Partials
 
 
-_tanh_poly_cache: dict[int, list[float]] = {}  # store T_n(t) as a list of coefficients
-# Define T_1(t) = 1 - t^2 => [1.0, 0.0, -1.0] (i.e. 1 + 0*t - 1*t^2)
-_tanh_poly_cache[1] = [1.0, 0.0, -1.0]
-
-
-def get_tanh_poly(n: int) -> list[float]:
-    """
-    Returns the list of coefficients of T_n(t) where
-    T_n(t) = d^n/dx^n [tanh(x)], represented in t = tanh(x).
-    """
-    if n in _tanh_poly_cache:
-        return _tanh_poly_cache[n]
-
-    max_cached: int = max(_tanh_poly_cache.keys())
-    for k in range(max_cached, n):
-        Tk: list[float] = _tanh_poly_cache[k]
-        dTk: list[float] = poly_derivative(Tk)  # d/dt [T_k(t)]
-
-        # (1 - t^2) * dTk
-        # (1 - t^2) => [1.0, 0.0, -1.0]
-        T_next: list[float] = poly_var_mul(dTk, [1.0, 0.0, -1.0])
-        _tanh_poly_cache[k + 1] = T_next
-
-    return _tanh_poly_cache[n]
-
-
-def tanh_derivate(tensor: Tensor, n: int) -> Tensor:
-    """
-    Returns the n-th derivative of tanh(x) evaluated at inv_tanh(tensor).
-    """
-    if n == 0:
-        # "0-th derivative" => tanh(x) itself
-        return tensor
-
-    # Obtain T_n(t)
-    Tn: list[float] = get_tanh_poly(n)
-    # Evaluate at t
-    return poly_eval(Tn, tensor)
-
-
-class TanhXBackward0(ExtendedAutogradFunction):
+class LeakyReluXBackward0(ExtendedAutogradFunction):
 
     def __init__(
         self, grad_fn: AutogradFunction, order: int, device: torch.device
@@ -72,21 +27,23 @@ class TanhXBackward0(ExtendedAutogradFunction):
         integral: bool = 0 in self._output_registry
         return integral
 
-    def _get_context(self) -> Tuple[Tensor]:
-        saved_result: Tensor = self._grad_fn._saved_result
-        return (saved_result,)
+    def _get_context(self) -> Tuple[float, Tensor]:
+        saved_negative_slope: float = self.grad_fn._saved_negative_slope
+        saved_self: Tensor = self.grad_fn._saved_self.to(device=self._device)
+        return (saved_negative_slope, saved_self)
 
     def _differentiation(
         self, shaped_output_partials: ShapedPartials, idx: int
     ) -> None:
+
         assert idx == 0
         ctx: Tuple[Tensor, Tensor] = self._get_context()
-        result: Tensor = ctx[0]
+        slope: Tensor = ctx[0]
+        input: Tensor = ctx[1]
 
-        expected_output_shape: Tuple[int, ...] = tuple(result.shape)
+        expected_output_shape: Tuple[int, ...] = tuple(input.shape)
         shaped_output_partials = unbroadcast(
-            shaped_partials=shaped_output_partials,
-            output_shape=expected_output_shape,
+            shaped_partials=shaped_output_partials, output_shape=expected_output_shape
         )
         output_partials: Partials = shaped_output_partials[0]
         output_shape: Tuple[int, ...] = shaped_output_partials[1]
@@ -97,10 +54,16 @@ class TanhXBackward0(ExtendedAutogradFunction):
         expressions: list[SumGroup]
         expressions = [calculate_n_order_partial(n=(n + 1)) for n in range(self._order)]
 
-        # compute internal partials
+        # Compute internal partials
         derivatives: list[Tensor] = list()
+        # obtain element wise internal first derivative tensor
+        cond: Tensor = input.flatten() > 0
+        t1: Tensor = torch.tensor([1.0], device=self._device)
+        t0: Tensor = torch.tensor([slope], device=self._device)
+        derivative: Tensor = torch.where(condition=cond, input=t1, other=t0)
         for order in range(1, self._order + 1):
-            derivative: Tensor = tanh_derivate(tensor=result.flatten(), n=order)
+            if order > 1:
+                derivative = torch.zeros_like(derivative)
             derivatives.append(derivative)
 
         # compute partials

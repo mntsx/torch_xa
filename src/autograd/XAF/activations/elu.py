@@ -15,7 +15,7 @@ from src.utils.partials import unbroadcast
 from src.utils.types import AutogradFunction, ShapedPartials, Partials
 
 
-class ReluXBackward0(ExtendedAutogradFunction):
+class EluXBackward0(ExtendedAutogradFunction):
 
     def __init__(
         self, grad_fn: AutogradFunction, order: int, device: torch.device
@@ -27,9 +27,12 @@ class ReluXBackward0(ExtendedAutogradFunction):
         integral: bool = 0 in self._output_registry
         return integral
 
-    def _get_context(self) -> Tuple[Tensor]:
-        saved_result: Tensor = self._grad_fn._saved_result.to(device=self._device)
-        return (saved_result,)
+    def _get_context(self) -> Tuple[float, int, int, Tensor]:
+        saved_alpha: float = self.grad_fn._saved_alpha
+        saved_input_scale: int = self.grad_fn._saved_input_scale
+        saved_scale: int = self.grad_fn._saved_scale
+        saved_self: Tensor = self.grad_fn._saved_self.to(device=self._device)
+        return (saved_alpha, saved_input_scale, saved_scale, saved_self)
 
     def _differentiation(
         self, shaped_output_partials: ShapedPartials, idx: int
@@ -37,9 +40,10 @@ class ReluXBackward0(ExtendedAutogradFunction):
 
         assert idx == 0
         ctx: Tuple[Tensor, Tensor] = self._get_context()
-        result: Tensor = ctx[0]
+        alpha: Tensor = ctx[0]
+        input: Tensor = ctx[3]
 
-        expected_output_shape: Tuple[int, ...] = tuple(result.shape)
+        expected_output_shape: Tuple[int, ...] = tuple(input.shape)
         shaped_output_partials = unbroadcast(
             shaped_partials=shaped_output_partials, output_shape=expected_output_shape
         )
@@ -52,17 +56,13 @@ class ReluXBackward0(ExtendedAutogradFunction):
         expressions: list[SumGroup]
         expressions = [calculate_n_order_partial(n=(n + 1)) for n in range(self._order)]
 
-        # Compute internal partials
-        derivatives: list[Tensor] = list()
         # obtain element wise internal first derivative tensor
-        cond: Tensor = result.flatten() > 0
+        flat_input: Tensor = input.flatten()
+        cond: Tensor = flat_input > 0
         t1: Tensor = torch.tensor([1.0], device=self._device)
-        t0: Tensor = torch.tensor([0.0], device=self._device)
+        t0: Tensor = alpha * torch.exp(flat_input)
         derivative: Tensor = torch.where(condition=cond, input=t1, other=t0)
-        for order in range(1, self._order + 1):
-            if order > 1:
-                derivative = torch.zeros_like(derivative, device=self._device)
-            derivatives.append(derivative)
+        derivatives: list[Tensor] = [derivative for _ in range(self._order)]
 
         # compute partials
         pretensors: Tuple[Tensor, ...] = output_partials

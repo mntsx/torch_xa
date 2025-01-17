@@ -17,6 +17,7 @@ from src.autograd.engine.symbolic.polinomial import (
     poly_var_mul,
 )
 from src.autograd.XAF.base import ExtendedAutogradFunction
+from src.utils.partials import unbroadcast
 from src.utils.types import AutogradFunction, ShapedPartials, Partials
 
 
@@ -99,7 +100,7 @@ class SigmoidXBackward0(ExtendedAutogradFunction):
         result: Tensor = ctx[0]
 
         expected_output_shape: Tuple[int, ...] = tuple(result.shape)
-        shaped_output_partials = self._unbroadcast_partials(
+        shaped_output_partials = unbroadcast(
             shaped_partials=shaped_output_partials,
             output_shape=expected_output_shape,
         )

@@ -9,6 +9,7 @@ from torch import Tensor
 
 # Internal dependencies
 from src.autograd.XAF.base import ExtendedAutogradFunction
+from src.utils.partials import unbroadcast
 from src.utils.types import AutogradFunction, ShapedPartials
 
 
@@ -36,7 +37,7 @@ class AccumulateGradX(ExtendedAutogradFunction):
         variable: Tensor = self._get_context()[0]
 
         expected_output_shape: Tuple[int, ...] = tuple(variable.shape)
-        shaped_output_partials = self._unbroadcast_partials(
+        shaped_output_partials = unbroadcast(
             shaped_partials=shaped_output_partials,
             output_shape=expected_output_shape,
         )

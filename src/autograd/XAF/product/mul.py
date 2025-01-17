@@ -11,6 +11,7 @@ from torch import Tensor
 from src.autograd.engine.backprop import hadamard
 from src.autograd.engine.symbolic.derivation import calculate_n_order_partial, SumGroup
 from src.autograd.XAF.base import ExtendedAutogradFunction
+from src.utils.partials import unbroadcast
 from src.utils.types import AutogradFunction, ShapedPartials, Partials
 
 
@@ -46,7 +47,7 @@ class MulXBackward0(ExtendedAutogradFunction):
         expected_output_shape: list[int] = list()
         for i in range(max_len):
             expected_output_shape.append(max(m1_padded_shape[i], m2_padded_shape[i]))
-        shaped_output_partials = self._unbroadcast_partials(
+        shaped_output_partials = unbroadcast(
             shaped_partials=shaped_output_partials,
             output_shape=tuple(expected_output_shape),
         )
@@ -87,7 +88,7 @@ class MulXBackward0(ExtendedAutogradFunction):
             )
             multipartials[0].append(contracted_tensor)
         multipartials[0] = list(
-            self._unbroadcast_partials(
+            unbroadcast(
                 shaped_partials=(multipartials[0], output_shape), output_shape=m1.shape
             )[0]
         )
@@ -116,7 +117,7 @@ class MulXBackward0(ExtendedAutogradFunction):
             )
             multipartials[1].append(contracted_tensor)
         multipartials[1] = list(
-            self._unbroadcast_partials(
+            unbroadcast(
                 shaped_partials=(multipartials[1], output_shape), output_shape=m2.shape
             )[0]
         )
