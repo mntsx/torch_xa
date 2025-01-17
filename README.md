@@ -66,9 +66,6 @@ To install **torch_xa** and start exploring higher-order derivatives, follow the
    cd torch_xa
    pip install -r requirements.txt
    ```
-
-   **Note**: Only PyTorch is strictly required to run **torch_xa**. The `pytest` package in `requirements.txt` is used solely for testing purposes.
-
 ---
 
 <br>
@@ -195,7 +192,7 @@ The proper functioning of extended autograd with each different PyTorch operator
 
 ### Products
 
-- **Multiply**: `*`, `torch.mul`, `torch.multiply`, `torch.Tensor.mul`
+- **Multiply**: `*`, `torch.mul`, `torch.multiply`, `torch.Tensor.mul`, `torch.nn.functional.dropout`
 - **Product** (Not Implemented): `torch.prod`, `torch.Tensor.prod`
 
 ### Reshape
@@ -203,7 +200,7 @@ The proper functioning of extended autograd with each different PyTorch operator
 - **Permute**: `torch.permute`, `torch.Tensor.permute`, `torch.Tensor.T`
 - **T**: `torch.t`, `torch.Tensor.t`
 - **Transpose**: `torch.transpose`, `torch.Tensor.transpose`
-- **View** (Not Implemented): `torch.view`, `torch.Tensor.view`
+- **View** (Not Implemented): `torch.view`, `torch.Tensor.view`, `torch.flatten`, `torch.Tensor.flatten`
 
 ### Summations
 
@@ -227,7 +224,7 @@ Below is an overview of the **torch_xa** repository’s structure, illustrating 
 │   │   ├── configurations
 │   │   │   ├── exchangers.py
 │   │   │   ├── flags.py
-│   │   │   ├── selectors.py
+│   │   │   └── selectors.py
 │   │   ├── engine
 │   │   │   ├── symbolic
 │   │   │   │   ├── derivation.py
@@ -235,7 +232,7 @@ Below is an overview of the **torch_xa** repository’s structure, illustrating 
 │   │   │   ├── backprop.py
 │   │   │   ├── graph.py
 │   │   │   ├── interfaces.py
-│   │   │   ├── scheduler.py
+│   │   │   └── scheduler.py
 │   │   └── XAF
 │   │       ├── activations
 │   │       ├── attention
@@ -248,14 +245,14 @@ Below is an overview of the **torch_xa** repository’s structure, illustrating 
 │   │       ├── summation
 │   │       ├── accumulation.py
 │   │       ├── base.py
-│   │       ├── test.py
+│   │       └── test.py
 │   ├── tensors
 │   │   ├── functional.py
-│   │   ├── objects.py
+│   │   └── objects.py
 │   └── utils
 │       ├── partials.py
 │       ├── relationships.py
-│       ├── types.py
+│       └── types.py
 └── tests
     └── utils
 ```
