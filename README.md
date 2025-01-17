@@ -187,7 +187,7 @@ The proper functioning of extended autograd with each different PyTorch operator
 - **Softmax**: `torch.softmax`, `torch.nn.Softmax`, `torch.nn.functional.softmax`
 - **Tanh**: `torch.tanh`, `torch.nn.Tanh`, `torch.nn.functional.tanh`
 
-### Matrix Multiplication
+### Matrix Multiplications
 
 - **addmm**: `torch.addmm`, `torch.nn.Linear`, `torch.nn.functional.linear`
 - **mm**: `torch.mm`, `torch.matmul`, `torch.nn.Linear`, `torch.nn.functional.linear`
@@ -197,7 +197,7 @@ The proper functioning of extended autograd with each different PyTorch operator
 - **Multiply**: `*`, `torch.mul`, `torch.multiply`, `torch.Tensor.mul`, `torch.nn.functional.dropout`
 - **Product**: `torch.prod`, `torch.Tensor.prod`
 
-### Reshape
+### Reshapes
 
 - **Permute**: `torch.permute`, `torch.Tensor.permute`, `torch.Tensor.T`
 - **T**: `torch.t`, `torch.Tensor.t`
