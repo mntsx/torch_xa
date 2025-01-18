@@ -180,12 +180,19 @@ The proper functioning of extended autograd with each different PyTorch operator
 
 ### Activations
 
-- **ReLU**: `torch.relu`, `torch.nn.ReLU`, `torch.nn.functional.relu`
 - **ELU**: `torch.nn.ELU`, `torch.nn.functional.elu`
+- **GeLU**: `torch.nn.GeLU`, `torch.nn.functional.gelu`
 - **LeakyReLU**: `torch.nn.LeakyReLU`, `torch.nn.functional.leaky_relu`
+- **PReLU**: `torch.nn.PReLU`, `torch.nn.functional.prelu`
+- **ReLU**: `torch.relu`, `torch.nn.ReLU`, `torch.nn.functional.relu`
+- **SeLU**: `torch.nn.SeLU`, `torch.nn.functional.selu`
 - **Sigmoid**: `torch.sigmoid`, `torch.nn.Sigmoid`, `torch.nn.functional.sigmoid`
 - **Softmax**: `torch.softmax`, `torch.nn.Softmax`, `torch.nn.functional.softmax`
 - **Tanh**: `torch.tanh`, `torch.nn.Tanh`, `torch.nn.functional.tanh`
+
+### Conditionals
+
+- **Where**: `torch.where`
 
 ### Matrix Multiplications
 
