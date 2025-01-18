@@ -189,13 +189,13 @@ The proper functioning of extended autograd with each different PyTorch operator
 
 ### Matrix Multiplications
 
-- **addmm**: `torch.addmm`, `torch.nn.Linear`, `torch.nn.functional.linear`
-- **mm**: `torch.mm`, `torch.matmul`, `torch.nn.Linear`, `torch.nn.functional.linear`
+- **Addmm**: `torch.addmm`, `torch.nn.Linear`, `torch.nn.functional.linear`
+- **Matmul**: `torch.mm`, `torch.matmul`, `torch.nn.Linear`, `torch.nn.functional.linear`
 
 ### Products
 
-- **Multiply**: `*`, `torch.mul`, `torch.multiply`, `torch.Tensor.mul`, `torch.nn.functional.dropout`
-- **Product**: `torch.prod`, `torch.Tensor.prod`
+- **Mul**: `*`, `torch.mul`, `torch.multiply`, `torch.Tensor.mul`, `torch.nn.functional.dropout`
+- **Prod**: `torch.prod`, `torch.Tensor.prod`
 
 ### Reshapes
 
@@ -207,6 +207,7 @@ The proper functioning of extended autograd with each different PyTorch operator
 ### Summations
 
 - **Add**: `+`, `torch.add`, `torch.Tensor.add`
+- **Sub**: `torch.sub`, `torch.Tensor.subtract`
 - **Sum**: `torch.sum`, `torch.Tensor.sum`
 
 ---
