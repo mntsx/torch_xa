@@ -191,7 +191,7 @@ The proper functioning of extended autograd with each different PyTorch operator
 
 ### Conditionals
 
-- **Where**: `torch.where`
+- **Where**: `torch.where`, `torch.Tensor.where`
 
 ### Matrix Multiplications
 
