@@ -181,7 +181,6 @@ The proper functioning of extended autograd with each different PyTorch operator
 ### Activations
 
 - **ELU**: `torch.nn.ELU`, `torch.nn.functional.elu`
-- **GeLU**: `torch.nn.GeLU`, `torch.nn.functional.gelu`
 - **LeakyReLU**: `torch.nn.LeakyReLU`, `torch.nn.functional.leaky_relu`
 - **PReLU**: `torch.nn.PReLU`, `torch.nn.functional.prelu`
 - **ReLU**: `torch.relu`, `torch.nn.ReLU`, `torch.nn.functional.relu`
