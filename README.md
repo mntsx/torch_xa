@@ -195,12 +195,19 @@ The proper functioning of extended autograd with each different PyTorch operator
 
 ### Matrix Multiplications
 
-- **Addmm**: `torch.addmm`, `torch.nn.Linear`, `torch.nn.functional.linear`
-- **Matmul**: `torch.mm`, `torch.matmul`, `torch.nn.Linear`, `torch.nn.functional.linear`
+- **Addmm**: `torch.addmm`, `torch.Tensor.addmm`, `torch.nn.Linear`, `torch.nn.functional.linear`
+- **Matmul**: `@`,`torch.mm`, `torch.Tensor.mm`, `torch.matmul`, `torch.Tensor.matmul`, `torch.nn.Linear`, `torch.nn.functional.linear`
+
+### Powers
+
+- **Exp**: `torch.exp`, `torch.Tensor.exp`
+- **Pow**: `**`, `torch.pow`, `torch.Tensor.pow`, `torch.square`, `torch.Tensor.square`
+- **Sqrt**: `torch.prod`, `torch.Tensor.prod`
 
 ### Products
 
-- **Mul**: `*`, `torch.mul`, `torch.multiply`, `torch.Tensor.mul`, `torch.nn.functional.dropout`
+- **Div**: `/`, `torch.div`, `torch.Tensor.div`
+- **Mul**: `*`, `torch.mul`, `torch.Tensor.mul`, `torch.multiply`, `torch.nn.Dropout`, `torch.nn.functional.dropout`
 - **Prod**: `torch.prod`, `torch.Tensor.prod`
 
 ### Reshapes
@@ -216,6 +223,11 @@ The proper functioning of extended autograd with each different PyTorch operator
 - **Sub**: `torch.sub`, `torch.Tensor.subtract`
 - **Sum**: `torch.sum`, `torch.Tensor.sum`
 
+### More Mathematical Operators
+
+- **Log**: `torch.log`, `torch.Tensor.log`
+- **Sin**: `torch.sin`, `torch.Tensor.sin`
+- **Cos**: `torch.cos`, `torch.Tensor.cos`
 ---
 
 <br>
