@@ -71,7 +71,8 @@ class DivXBackward0(ExtendedAutogradFunction):
             if order == 1:
                 derivative = 1 / flat_m2
             else:
-                derivative = torch.zeros(size=(broadcasted_m2.numel(),))
+                # derivative = torch.zeros(size=(broadcasted_m2.numel(),))
+                derivative = torch.zeros(size=(1,), device=self._device)
             derivatives.append(derivative)
 
         # compute self partials

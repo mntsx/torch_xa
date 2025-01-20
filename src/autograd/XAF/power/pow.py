@@ -57,7 +57,6 @@ class PowXBackward0(ExtendedAutogradFunction):
         # precalculations
         flat_input: Tensor = torch.flatten(input=input)
         coefficient: float = 1.0
-        zeros: Tensor = torch.zeros_like(input=input)
 
         # obtain element wise internal first derivative tensor
         derivatives: list[Tensor] = list()
@@ -68,7 +67,8 @@ class PowXBackward0(ExtendedAutogradFunction):
                 coefficient *= exponent
                 exponent -= 1
             else:
-                derivative = zeros
+                # derivative = torch.zeros_like(input=input)
+                derivative = torch.zeros(size=(1,), device=self._device)
             derivatives.append(derivative)
 
         # compute partials
@@ -137,7 +137,6 @@ class PowXBackward1(ExtendedAutogradFunction):
         flat_exp: Tensor = torch.flatten(input=exponent)
         flat_exp_cp: Tensor = flat_exp.clone().detach().to(device=self._device)
         ones: Tensor = torch.ones_like(input=flat_exp)
-        zeros: Tensor = torch.zeros_like(input=flat_input)
 
         # compute input internal partials
         derivatives = list()
@@ -149,7 +148,8 @@ class PowXBackward1(ExtendedAutogradFunction):
                 flat_exp_cp -= 1
                 derivative = coefficient * flat_input**flat_exp_cp
             else:
-                derivative = zeros
+                # derivative = torch.zeros_like(input=input)
+                derivative = torch.zeros(size=(1,), device=self._device)
             derivatives.append(derivative)
 
         # compute input partials

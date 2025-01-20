@@ -29,8 +29,8 @@ def log_derivate(tensor: Tensor, n: int) -> Tensor:
         return torch.log(tensor)  # 0th derivative is log(x) itself
     else:
         # Use the closed-form for n >= 1
-        sign = (-1) ** (n - 1)
-        factorial_term = math.factorial(n - 1)
+        sign: int = (-1) ** (n - 1)
+        factorial_term: int = math.factorial(n - 1)
         return sign * factorial_term / (tensor**n)
 
 

@@ -66,8 +66,8 @@ class SeluXBackward0(ExtendedAutogradFunction):
         flat_exp: Tensor = exp.flatten()
         cond1: Tensor = flat_input > 0
         cond2: Tensor = flat_exp < alpha
-        ts: Tensor = torch.tensor([scale])
-        t0: Tensor = torch.tensor([0.0])
+        ts: Tensor = torch.tensor([scale], device=self._device)
+        t0: Tensor = torch.zeros(size=(1,), device=self._device)
 
         # obtain element wise internal first derivative tensor
         derivative1: Tensor = torch.where(condition=cond1, input=ts, other=t0)
@@ -75,8 +75,9 @@ class SeluXBackward0(ExtendedAutogradFunction):
         derivative: Tensor = derivative1 + derivative2
         for order in range(1, self._order + 1):
             if order > 1:
-                derivative = torch.zeros_like(derivative)
-            derivatives.append(derivative2)
+                # derivative = torch.zeros_like(derivative)
+                derivative = torch.zeros(size=(1,), device=self._device)
+            derivatives.append(derivative)
 
         # compute partials
         pretensors: Tuple[Tensor, ...] = output_partials

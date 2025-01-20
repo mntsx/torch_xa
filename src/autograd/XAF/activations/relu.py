@@ -55,12 +55,13 @@ class ReluXBackward0(ExtendedAutogradFunction):
         derivatives: list[Tensor] = list()
         # obtain element wise internal first derivative tensor
         cond: Tensor = result.flatten() > 0
-        t1: Tensor = torch.tensor([1.0], device=self._device)
-        t0: Tensor = torch.tensor([0.0], device=self._device)
+        t1: Tensor = torch.ones(size=(1,), device=self._device)
+        t0: Tensor = torch.zeros(size=(1,), device=self._device)
         derivative: Tensor = torch.where(condition=cond, input=t1, other=t0)
         for order in range(1, self._order + 1):
             if order > 1:
-                derivative = torch.zeros_like(derivative, device=self._device)
+                # derivative = torch.zeros_like(derivative, device=self._device)
+                derivative = torch.zeros(size=(1,), device=self._device)
             derivatives.append(derivative)
 
         # compute partials

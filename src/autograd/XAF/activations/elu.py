@@ -60,8 +60,8 @@ class EluXBackward0(ExtendedAutogradFunction):
         flat_input: Tensor = input.flatten()
         cond: Tensor = flat_input > 0
         t1: Tensor = torch.tensor([1.0], device=self._device)
-        t0: Tensor = alpha * torch.exp(flat_input)
-        derivative: Tensor = torch.where(condition=cond, input=t1, other=t0)
+        ta: Tensor = alpha * torch.exp(flat_input)
+        derivative: Tensor = torch.where(condition=cond, input=t1, other=ta)
         derivatives: list[Tensor] = [derivative for _ in range(self._order)]
 
         # compute partials

@@ -98,9 +98,10 @@ class AddmmXBackward0(ExtendedAutogradFunction):
                     size=(output_numel,), device=self._device
                 )
             else:
-                internal_partial = torch.zeros(
-                    size=(output_numel,), device=self._device
-                )
+                # internal_partial = torch.zeros(
+                #     size=(output_numel,), device=self._device
+                # )
+                internal_partial = torch.zeros(size=(1,), device=self._device)
             internal_partials.append(internal_partial)
 
         # compute input partials
@@ -125,7 +126,8 @@ class AddmmXBackward0(ExtendedAutogradFunction):
                 internal_partial = beta * m2.T
             else:
                 shape = (m2_sizes[1], *[m2_sizes[0] for _ in range(order)])
-                internal_partial = torch.zeros(size=shape, device=self._device)
+                # internal_partial = torch.zeros(size=shape, device=self._device)
+                internal_partial = torch.zeros(size=(1,), device=self._device)
             internal_partials.append(internal_partial)
 
         # compute m1 partials
@@ -155,7 +157,8 @@ class AddmmXBackward0(ExtendedAutogradFunction):
             else:
                 shape: Tuple[int, ...]
                 shape = (m1_sizes[0], *[m1_sizes[1] for _ in range(order)])
-                internal_partial = torch.zeros(size=shape, device=self._device)
+                # internal_partial = torch.zeros(size=shape, device=self._device)
+                internal_partial = torch.zeros(size=(1,), device=self._device)
             internal_partials.append(internal_partial)
 
         # compute m2 partials

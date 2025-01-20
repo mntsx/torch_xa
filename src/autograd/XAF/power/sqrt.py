@@ -52,7 +52,6 @@ class SqrtXBackward0(ExtendedAutogradFunction):
 
         # precalculations
         flat_result: Tensor = torch.flatten(input=result)
-        zeros: Tensor = torch.zeros_like(input=flat_result)
 
         # obtain element wise internal first derivative tensor
         derivatives: list[Tensor] = list()
@@ -61,7 +60,8 @@ class SqrtXBackward0(ExtendedAutogradFunction):
             if order == 1:
                 derivative = 0.5 / flat_result
             else:
-                derivative = zeros
+                # derivative = torch.zeros_like(input=input)
+                derivative = torch.zeros(size=(1,), device=self._device)
             derivatives.append(derivative)
 
         # compute partials

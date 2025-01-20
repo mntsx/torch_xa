@@ -87,7 +87,8 @@ class SumXBackward0(ExtendedAutogradFunction):
             if order == 1:
                 derivative = torch.ones(size=shape, device=self._device)
             else:
-                derivative = torch.zeros(size=shape, device=self._device)
+                # derivative = torch.zeros(size=shape, device=self._device)
+                derivative = torch.zeros(size=(1,), device=self._device)
             derivatives.append(derivative)
 
         # compute input partials

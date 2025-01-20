@@ -92,8 +92,9 @@ class ProdXBackward0(ExtendedAutogradFunction):
                 permuted_quotient: Tensor = quotient.permute(dims=tuple(permutation))
                 derivative = permuted_quotient.view(size=(batch_size, 1, prod_size))
             else:
-                shape = (batch_size, 1, *(order * (prod_size,)))
-                derivative = torch.zeros(size=shape, device=self._device)
+                # shape = (batch_size, 1, *(order * (prod_size,)))
+                # derivative = torch.zeros(size=shape, device=self._device)
+                derivative = torch.zeros(size=(1,), device=self._device)
             derivatives.append(derivative)
 
         # compute input partials

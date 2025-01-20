@@ -100,9 +100,10 @@ class MulXBackward0(ExtendedAutogradFunction):
             if order == 1:
                 derivative = broadcasted_m1.flatten()
             else:
-                derivative = torch.zeros(
-                    size=(broadcasted_m1.numel(),), device=self._device
-                )
+                # derivative = torch.zeros(
+                #     size=(broadcasted_m1.numel(),), device=self._device
+                # )
+                derivative = torch.zeros(size=(1,), device=self._device)
             derivatives.append(derivative)
 
         # compute other partials

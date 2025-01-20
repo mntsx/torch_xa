@@ -62,8 +62,8 @@ class PreluKernelXBackward0(ExtendedAutogradFunction):
         derivative: Tensor
         derivatives: list[Tensor]
         cond: Tensor = input.flatten() > 0
-        t1: Tensor = torch.ones(size=(1,))
-        t0: Tensor = torch.zeros(size=(1,))
+        t1: Tensor = torch.ones(size=(1,), device=self._device)
+        t0: Tensor = torch.zeros(size=(1,), device=self._device)
         extend_shape: Tuple[int, ...]
         extend_shape = tuple([s if d == 1 else 1 for d, s in enumerate(output_shape)])
         extended_weight: Tensor = squeezed_weight.view(size=extend_shape)
@@ -76,7 +76,8 @@ class PreluKernelXBackward0(ExtendedAutogradFunction):
         derivative: Tensor = torch.where(condition=cond, input=t1, other=flat_weight)
         for order in range(1, self._order + 1):
             if order > 1:
-                derivative = t0  # torch.zeros_like(derivative)
+                # derivative = torch.zeros_like(derivative)
+                derivative = torch.zeros(size=(1,), device=self._device)
             derivatives.append(derivative)
 
         # compute input partials

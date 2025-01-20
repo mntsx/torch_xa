@@ -54,7 +54,8 @@ class AddXBackward0(ExtendedAutogradFunction):
             if order == 1:
                 derivative = torch.ones(size=(output_numel,), device=self._device)
             else:
-                derivative = torch.zeros(size=(output_numel,), device=self._device)
+                # derivative = torch.zeros(size=(output_numel,), device=self._device)
+                derivative = torch.zeros(size=(1,), device=self._device)
             derivatives.append(derivative)
 
         # compute other partials

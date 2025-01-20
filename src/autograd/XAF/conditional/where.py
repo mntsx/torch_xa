@@ -57,7 +57,8 @@ class WhereXBackward0(ExtendedAutogradFunction):
         derivative = torch.where(condition=flat_cond, input=t1, other=t0)
         for order in range(1, self._order + 1):
             if order > 1:
-                derivative = torch.zeros_like(input=derivative, device=self._device)
+                # derivative = torch.zeros_like(input=derivative, device=self._device)
+                derivative = torch.zeros(size=(1,), device=self._device)
             derivatives.append(derivative)
 
         # compute other partials
