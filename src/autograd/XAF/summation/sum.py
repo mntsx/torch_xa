@@ -10,7 +10,7 @@ from torch import Tensor
 
 # Internal dependencies
 from src.autograd.engine.symbolic.derivation import calculate_n_order_partial, SumGroup
-from src.autograd.engine.backprop import contractor
+from src.autograd.engine.backprop import contraction
 from src.autograd.XAF.base import ExtendedAutogradFunction
 from src.utils.partials import unbroadcast
 from src.utils.types import AutogradFunction, ShapedPartials, Partials
@@ -29,7 +29,7 @@ class SumXBackward0(ExtendedAutogradFunction):
         return integral
 
     def _get_context(self) -> Tuple[Tuple[int, ...], bool, Tuple[int, ...]]:
-        saved_self_sym_sizes: Tuple[int, ...] = self.grad_fn._saved_self_sym_sizes
+        saved_self_sym_sizes: Tuple[int, ...] = self._grad_fn._saved_self_sym_sizes
         saved_dim: Tuple[int, ...] = tuple(
             [i for i, _ in enumerate(saved_self_sym_sizes)]
         )
@@ -102,7 +102,7 @@ class SumXBackward0(ExtendedAutogradFunction):
         pretensors = tuple(batched_partials)
         subtensors = tuple(derivatives)
         for i, expression in enumerate(expressions):
-            contracted_tensor: Tensor = contractor(
+            contracted_tensor: Tensor = contraction(
                 pretensors=pretensors,
                 subtensors=subtensors,
                 expression=expression,
@@ -154,7 +154,7 @@ class SumXBackward1(SumXBackward0):
         return None
 
     def _get_context(self) -> Tuple[Tuple[int, ...], bool, Tuple[int, ...]]:
-        saved_dim: Tuple[int, ...] = self.grad_fn._saved_dim
-        saved_keepdim: bool = self.grad_fn._saved_keepdim
-        saved_self_sym_sizes: Tuple[int, ...] = self.grad_fn._saved_self_sym_sizes
+        saved_dim: Tuple[int, ...] = self._grad_fn._saved_dim
+        saved_keepdim: bool = self._grad_fn._saved_keepdim
+        saved_self_sym_sizes: Tuple[int, ...] = self._grad_fn._saved_self_sym_sizes
         return (saved_dim, saved_keepdim, saved_self_sym_sizes)

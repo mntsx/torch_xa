@@ -9,7 +9,7 @@ from torch import Tensor
 
 # Internal dependencies
 from src.autograd.engine.symbolic.derivation import calculate_n_order_partial, SumGroup
-from src.autograd.engine.backprop import hadamard
+from src.autograd.engine.backprop import diagonal_contraction
 from src.autograd.XAF.base import ExtendedAutogradFunction
 from src.utils.partials import unbroadcast
 from src.utils.types import AutogradFunction, ShapedPartials, Partials
@@ -28,8 +28,8 @@ class LeakyReluXBackward0(ExtendedAutogradFunction):
         return integral
 
     def _get_context(self) -> Tuple[float, Tensor]:
-        saved_negative_slope: float = self.grad_fn._saved_negative_slope
-        saved_self: Tensor = self.grad_fn._saved_self.to(device=self._device)
+        saved_negative_slope: float = self._grad_fn._saved_negative_slope
+        saved_self: Tensor = self._grad_fn._saved_self.to(device=self._device)
         return (saved_negative_slope, saved_self)
 
     def _differentiation(
@@ -70,7 +70,7 @@ class LeakyReluXBackward0(ExtendedAutogradFunction):
         pretensors: Tuple[Tensor, ...] = output_partials
         subtensors: Tuple[Tensor, ...] = tuple(derivatives)
         for expression in expressions:
-            contracted_tensor: Tensor = hadamard(
+            contracted_tensor: Tensor = diagonal_contraction(
                 pretensors=pretensors,
                 subtensors=subtensors,
                 expression=expression,

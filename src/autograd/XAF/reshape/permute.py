@@ -25,7 +25,7 @@ class PermuteXBackward0(ExtendedAutogradFunction):
         return integral
 
     def _get_context(self) -> Tuple[Tuple[int, ...]]:
-        saved_dims: Tuple[int, ...] = self.grad_fn._saved_dims
+        saved_dims: Tuple[int, ...] = self._grad_fn._saved_dims
         return (saved_dims,)
 
     def _differentiation(

@@ -12,7 +12,7 @@ from src.autograd.engine.symbolic.derivation import SumGroup, ProductGroup, Part
 from src.tensors.functional import construct_nd_identity, einsum
 
 
-def contractor(
+def contraction(
     pretensors: Tuple[Tensor, ...],
     subtensors: Tuple[Tensor, ...],
     expression: SumGroup,
@@ -156,7 +156,7 @@ def contractor(
     return accum
 
 
-def hadamard(
+def diagonal_contraction(
     pretensors: Tuple[Tensor, ...],
     subtensors: Tuple[Tensor, ...],
     expression: SumGroup,

@@ -66,6 +66,7 @@ To install **torch_xa** and start exploring higher-order derivatives, follow the
    cd torch_xa
    pip install -r requirements.txt
    ```
+
 ---
 
 <br>
@@ -220,14 +221,15 @@ The proper functioning of extended autograd with each different PyTorch operator
 ### Summations
 
 - **Add**: `+`, `torch.add`, `torch.Tensor.add`
-- **Sub**: `torch.sub`, `torch.Tensor.subtract`
+- **Sub**: `-`, `torch.sub`, `torch.Tensor.subtract`
 - **Sum**: `torch.sum`, `torch.Tensor.sum`
 
 ### More Mathematical Operators
 
-- **Log**: `torch.log`, `torch.Tensor.log`
-- **Sin**: `torch.sin`, `torch.Tensor.sin`
-- **Cos**: `torch.cos`, `torch.Tensor.cos`
+- **Cos**: `torch.cos`
+- **Log**: `torch.log`
+- **Sin**: `torch.sin`
+
 ---
 
 <br>

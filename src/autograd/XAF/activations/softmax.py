@@ -9,7 +9,7 @@ import torch
 from torch import Tensor
 
 # Internal dependencies
-from src.autograd.engine.backprop import contractor
+from src.autograd.engine.backprop import contraction
 from src.autograd.engine.symbolic.derivation import calculate_n_order_partial, SumGroup
 from src.autograd.XAF.base import ExtendedAutogradFunction
 from src.utils.partials import unbroadcast
@@ -231,7 +231,7 @@ class SoftmaxBackward0(ExtendedAutogradFunction):
         pretensors = tuple(aux)
         subtensors = tuple(internal_partials)
         for i, expression in enumerate(expressions):
-            contracted_tensor: Tensor = contractor(
+            contracted_tensor: Tensor = contraction(
                 pretensors=pretensors,
                 subtensors=subtensors,
                 expression=expression,

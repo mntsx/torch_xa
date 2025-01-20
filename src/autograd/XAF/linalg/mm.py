@@ -8,7 +8,7 @@ import torch
 from torch import Tensor
 
 # Internal dependencies
-from src.autograd.engine.backprop import contractor
+from src.autograd.engine.backprop import contraction
 from src.autograd.engine.symbolic.derivation import calculate_n_order_partial, SumGroup
 from src.autograd.XAF.base import ExtendedAutogradFunction
 from src.utils.partials import unbroadcast
@@ -38,12 +38,12 @@ class MmXBackward0(ExtendedAutogradFunction):
         Tuple[int, ...],
     ]:
         m1: Tensor = self._grad_fn._saved_self.to(device=self._device)
-        m1_sizes: Tuple[int, ...] = self.grad_fn._saved_self_sym_sizes
-        m1_strides: Tuple[int, ...] = self.grad_fn._saved_self_sym_strides
+        m1_sizes: Tuple[int, ...] = self._grad_fn._saved_self_sym_sizes
+        m1_strides: Tuple[int, ...] = self._grad_fn._saved_self_sym_strides
 
         m2: Tensor = self._grad_fn._saved_mat2.to(device=self._device)
-        m2_sizes: Tuple[int, ...] = self.grad_fn._saved_mat2_sym_sizes
-        m2_strides: Tuple[int, ...] = self.grad_fn._saved_mat2_sym_strides
+        m2_sizes: Tuple[int, ...] = self._grad_fn._saved_mat2_sym_sizes
+        m2_strides: Tuple[int, ...] = self._grad_fn._saved_mat2_sym_strides
 
         return (m1, m1_sizes, m1_strides, m2, m2_sizes, m2_strides)
 
@@ -108,7 +108,7 @@ class MmXBackward0(ExtendedAutogradFunction):
         pretensors = tuple(aux)
         subtensors = tuple(internal_partials)
         for i, expression in enumerate(expressions):
-            contracted_tensor = contractor(
+            contracted_tensor = contraction(
                 pretensors=pretensors,
                 subtensors=subtensors,
                 expression=expression,
@@ -140,7 +140,7 @@ class MmXBackward0(ExtendedAutogradFunction):
         pretensors = tuple(aux)
         subtensors = tuple(internal_partials)
         for i, expression in enumerate(expressions):
-            contracted_tensor = contractor(
+            contracted_tensor = contraction(
                 pretensors=pretensors,
                 subtensors=subtensors,
                 expression=expression,

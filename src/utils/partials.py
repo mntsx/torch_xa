@@ -216,8 +216,9 @@ def unscale(shaped_partials: ShapedPartials, target_numel: int) -> ShapedPartial
 
         # B) Identify dims to reduce
         broadcast_dims: list[int] = [
-            i + 1
-            for i, (s_dim, t_dim) in enumerate(zip(shape, target_shape))
+            (i * len(shape)) + d + 1
+            for i in range(idx + 1)
+            for d, (s_dim, t_dim) in enumerate(zip(shape, target_shape))
             if (t_dim == 1 and s_dim != 1)
         ]
 
