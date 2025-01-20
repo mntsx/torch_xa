@@ -31,56 +31,54 @@ def test_3() -> None:
 
     T0: Tensor
     T1: Tensor
-    O: Tensor
 
     T0 = torch.rand(size=(4, 6), requires_grad=True, device=device)
     T1 = torch.rand(size=(4, 6), requires_grad=True, device=device)
-    O = torch.add(T0, T1)
-    backward(source=O, order=2)
-    assert T0.xgrad[0].shape == (O.numel(), T0.numel())
-    assert T1.xgrad[0].shape == (O.numel(), T1.numel())
+    O0: Tensor = torch.add(T0, T1)
+    backward(source=O0, order=2)
+    assert T0.xgrad[0].shape == (O0.numel(), T0.numel())
+    assert T1.xgrad[0].shape == (O0.numel(), T1.numel())
 
     T0 = torch.rand(size=(1, 6), requires_grad=True, device=device)
     T1 = torch.rand(size=(4, 6), requires_grad=True, device=device)
-    O = torch.add(T0, T1)
-    backward(source=O, order=2)
-    assert T0.xgrad[0].shape == (O.numel(), T0.numel())
-    assert T1.xgrad[0].shape == (O.numel(), T1.numel())
+    O1: Tensor = torch.add(T0, T1)
+    backward(source=O1, order=2)
+    assert T0.xgrad[0].shape == (O1.numel(), T0.numel())
+    assert T1.xgrad[0].shape == (O1.numel(), T1.numel())
 
     T0 = torch.rand(size=(4, 1), requires_grad=True, device=device)
     T1 = torch.rand(size=(4, 6), requires_grad=True, device=device)
-    O = torch.add(T0, T1)
-    backward(source=O, order=2)
-    assert T0.xgrad[0].shape == (O.numel(), T0.numel())
-    assert T1.xgrad[0].shape == (O.numel(), T1.numel())
+    O2: Tensor = torch.add(T0, T1)
+    backward(source=O2, order=2)
+    assert T0.xgrad[0].shape == (O2.numel(), T0.numel())
+    assert T1.xgrad[0].shape == (O2.numel(), T1.numel())
 
 
 def test_4() -> None:
 
     T0: Tensor
     T1: Tensor
-    O: Tensor
 
     T0 = torch.rand(size=(4, 6), requires_grad=True, device=device)
     T1 = torch.rand(size=(4, 6), requires_grad=True, device=device)
-    O = torch.mul(T0, T1)
-    backward(source=O, order=2)
-    assert T0.xgrad[0].shape == (O.numel(), T0.numel())
-    assert T1.xgrad[0].shape == (O.numel(), T1.numel())
+    O0: Tensor = torch.mul(T0, T1)
+    backward(source=O0, order=2)
+    assert T0.xgrad[0].shape == (O0.numel(), T0.numel())
+    assert T1.xgrad[0].shape == (O0.numel(), T1.numel())
 
     T0 = torch.rand(size=(1, 6), requires_grad=True, device=device)
     T1 = torch.rand(size=(4, 6), requires_grad=True, device=device)
-    O = torch.mul(T0, T1)
-    backward(source=O, order=2)
-    assert T0.xgrad[0].shape == (O.numel(), T0.numel())
-    assert T1.xgrad[0].shape == (O.numel(), T1.numel())
+    O1: Tensor = torch.mul(T0, T1)
+    backward(source=O1, order=2)
+    assert T0.xgrad[0].shape == (O1.numel(), T0.numel())
+    assert T1.xgrad[0].shape == (O1.numel(), T1.numel())
 
     T0 = torch.rand(size=(4, 1), requires_grad=True, device=device)
     T1 = torch.rand(size=(4, 6), requires_grad=True, device=device)
-    O = torch.mul(T0, T1)
-    backward(source=O, order=2)
-    assert T0.xgrad[0].shape == (O.numel(), T0.numel())
-    assert T1.xgrad[0].shape == (O.numel(), T1.numel())
+    O2 = torch.mul(T0, T1)
+    backward(source=O2, order=2)
+    assert T0.xgrad[0].shape == (O2.numel(), T0.numel())
+    assert T1.xgrad[0].shape == (O2.numel(), T1.numel())
 
 
 def test_5() -> None:
@@ -88,34 +86,33 @@ def test_5() -> None:
     T0: Tensor
     T1: Tensor
     T2: Tensor
-    O: Tensor
 
     T0 = torch.rand(size=(4, 8), requires_grad=True, device=device)
     T1 = torch.rand(size=(4, 6), requires_grad=True, device=device)
     T2 = torch.rand(size=(6, 8), requires_grad=True, device=device)
-    O = torch.addmm(input=T0, mat1=T1, mat2=T2)
-    backward(source=O, order=2)
-    assert T0.xgrad[0].shape == (O.numel(), T0.numel())
-    assert T1.xgrad[0].shape == (O.numel(), T1.numel())
-    assert T2.xgrad[0].shape == (O.numel(), T2.numel())
+    O0: Tensor = torch.addmm(input=T0, mat1=T1, mat2=T2)
+    backward(source=O0, order=2)
+    assert T0.xgrad[0].shape == (O0.numel(), T0.numel())
+    assert T1.xgrad[0].shape == (O0.numel(), T1.numel())
+    assert T2.xgrad[0].shape == (O0.numel(), T2.numel())
 
     T0 = torch.rand(size=(8,), requires_grad=True, device=device)
     T1 = torch.rand(size=(4, 6), requires_grad=True, device=device)
     T2 = torch.rand(size=(6, 8), requires_grad=True, device=device)
-    O = torch.addmm(input=T0, mat1=T1, mat2=T2)
-    backward(source=O, order=2)
-    assert T0.xgrad[0].shape == (O.numel(), T0.numel())
-    assert T1.xgrad[0].shape == (O.numel(), T1.numel())
-    assert T2.xgrad[0].shape == (O.numel(), T2.numel())
+    O1: Tensor = torch.addmm(input=T0, mat1=T1, mat2=T2)
+    backward(source=O1, order=2)
+    assert T0.xgrad[0].shape == (O1.numel(), T0.numel())
+    assert T1.xgrad[0].shape == (O1.numel(), T1.numel())
+    assert T2.xgrad[0].shape == (O1.numel(), T2.numel())
 
     T0 = torch.rand(size=(1,), requires_grad=True, device=device)
     T1 = torch.rand(size=(4, 6), requires_grad=True, device=device)
     T2 = torch.rand(size=(6, 8), requires_grad=True, device=device)
-    O = torch.addmm(input=T0, mat1=T1, mat2=T2)
-    backward(source=O, order=2)
-    assert T0.xgrad[0].shape == (O.numel(), T0.numel())
-    assert T1.xgrad[0].shape == (O.numel(), T1.numel())
-    assert T2.xgrad[0].shape == (O.numel(), T2.numel())
+    O2: Tensor = torch.addmm(input=T0, mat1=T1, mat2=T2)
+    backward(source=O2, order=2)
+    assert T0.xgrad[0].shape == (O2.numel(), T0.numel())
+    assert T1.xgrad[0].shape == (O2.numel(), T1.numel())
+    assert T2.xgrad[0].shape == (O2.numel(), T2.numel())
 
 
 def test_6() -> None:
@@ -219,3 +216,128 @@ def test_16() -> None:
     O: Tensor = torch.nn.functional.leaky_relu(T)
     backward(source=O, order=2)
     assert T.xgrad[0].shape == (O.numel(), T.numel())
+
+
+def test_17() -> None:
+
+    T0: Tensor = torch.rand(size=(4, 4), requires_grad=True)
+    T1: Tensor = torch.rand(size=(4, 4), requires_grad=True)
+    cond: Tensor = T0 > 0.5
+    O0: Tensor = torch.where(condition=cond, input=T0, other=T1)
+
+    backward(source=O0, order=2)
+    assert T0.xgrad[0].shape == (O0.numel(), T0.numel())
+    assert T1.xgrad[0].shape == (O0.numel(), T1.numel())
+
+
+def test_18() -> None:
+
+    T0: Tensor = torch.rand(size=(4, 4), requires_grad=True)
+    T1: Tensor = torch.rand(size=(4, 4), requires_grad=True)
+    cond: Tensor = T0 > 0.5
+    O0: Tensor = torch.where(condition=cond, input=T0, other=T1)
+
+    backward(source=O0, order=2)
+    assert T0.xgrad[0].shape == (O0.numel(), T0.numel())
+    assert T1.xgrad[0].shape == (O0.numel(), T1.numel())
+
+
+def test_19() -> None:
+
+    T0: Tensor = torch.rand(size=(4, 4), requires_grad=True)
+    O0: Tensor = torch.selu(T0)
+
+    backward(source=O0, order=2)
+    assert T0.xgrad[0].shape == (O0.numel(), T0.numel())
+
+
+def test_20() -> None:
+
+    T0: Tensor = torch.rand(size=(4, 4), requires_grad=True)
+    T1: Tensor = torch.rand(size=(4, 4), requires_grad=True)
+    O0: Tensor = torch.prelu(T0, T1.sum(dim=1))
+
+    backward(source=O0, order=2)
+    assert T0.xgrad[0].shape == (O0.numel(), T0.numel())
+    assert T1.xgrad[0].shape == (O0.numel(), T1.numel())
+
+
+def test_21() -> None:
+
+    T0: Tensor = torch.rand(size=(4, 4), requires_grad=True)
+    O0: Tensor = torch.pow(T0, 3.5)
+
+    backward(source=O0, order=2)
+    assert T0.xgrad[0].shape == (O0.numel(), T0.numel())
+
+    T0: Tensor = torch.rand(size=(4, 4), requires_grad=True)
+    T1: Tensor = torch.rand(size=(4, 4), requires_grad=True)
+    O0: Tensor = torch.pow(T0, T1)
+
+    backward(source=O0, order=2)
+    assert T0.xgrad[0].shape == (O0.numel(), T0.numel())
+    assert T1.xgrad[0].shape == (O0.numel(), T1.numel())
+
+
+def test_22() -> None:
+
+    T0: Tensor = torch.rand(size=(4, 4), requires_grad=True)
+    O0: Tensor = torch.square(T0)
+
+    backward(source=O0, order=2)
+    assert T0.xgrad[0].shape == (O0.numel(), T0.numel())
+
+
+def test_23() -> None:
+
+    T0: Tensor = torch.rand(size=(4, 4), requires_grad=True)
+    O0: Tensor = torch.sqrt(T0)
+
+    backward(source=O0, order=2)
+    assert T0.xgrad[0].shape == (O0.numel(), T0.numel())
+
+
+def test_24() -> None:
+
+    T0: Tensor = torch.rand(size=(4, 4), requires_grad=True)
+    O0: Tensor = torch.exp(T0)
+
+    backward(source=O0, order=2)
+    assert T0.xgrad[0].shape == (O0.numel(), T0.numel())
+
+
+def test_25() -> None:
+
+    T0: Tensor = torch.rand(size=(4, 4), requires_grad=True)
+    O0: Tensor = torch.log(T0)
+
+    backward(source=O0, order=2)
+    assert T0.xgrad[0].shape == (O0.numel(), T0.numel())
+
+
+def test_26() -> None:
+
+    T0: Tensor = torch.rand(size=(4, 4), requires_grad=True)
+    O0: Tensor = torch.sin(T0)
+
+    backward(source=O0, order=2)
+    assert T0.xgrad[0].shape == (O0.numel(), T0.numel())
+
+
+def test_27() -> None:
+
+    T0: Tensor = torch.rand(size=(4, 4), requires_grad=True)
+    O0: Tensor = torch.cos(T0)
+
+    backward(source=O0, order=2)
+    assert T0.xgrad[0].shape == (O0.numel(), T0.numel())
+
+
+def test_28() -> None:
+
+    T0: Tensor = torch.rand(size=(4, 4), requires_grad=True)
+    T1: Tensor = torch.rand(size=(4, 4), requires_grad=True)
+    O0: Tensor = T0 / T1
+
+    backward(source=O0, order=2)
+    assert T0.xgrad[0].shape == (O0.numel(), T0.numel())
