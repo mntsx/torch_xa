@@ -198,7 +198,7 @@ The proper functioning of extended autograd with each different PyTorch operator
 
 - **Addmm**: `torch.addmm`, `torch.Tensor.addmm`, `torch.nn.Linear`, `torch.nn.functional.linear`
 - **Bmm**: `torch.bmm`, `torch.Tensor.bmm`
-- **Matmul**: `@`,`torch.dot`, `torch.Tensor.dot`
+- **Dot**: `@`,`torch.dot`, `torch.Tensor.dot`
 - **Matmul**: `@`,`torch.mm`, `torch.Tensor.mm`, `torch.matmul`, `torch.Tensor.matmul`, `torch.nn.Linear`, `torch.nn.functional.linear`
 
 ### Powers
