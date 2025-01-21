@@ -16,6 +16,8 @@ from .conditional.where import WhereXBackward0
 
 # linalg
 from .linalg.addmm import AddmmXBackward0
+from .linalg.bmm import BmmXBackward0
+from .linalg.dot import DotXBackward0
 from .linalg.mm import MmXBackward0
 
 # power

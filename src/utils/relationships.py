@@ -18,6 +18,7 @@ def grad_fn_map(grad_fn: AutogradFunction) -> Type:
 
     TA: Tensor = torch.zeros(size=(1,), requires_grad=True)
     TB: Tensor = torch.zeros(size=(1, 1), requires_grad=True)
+    TC: Tensor = torch.zeros(size=(1, 1, 1), requires_grad=True)
     XAF_class: Union[None, Type[ExtendedAutogradFunction]] = None
 
     aux: Tensor
@@ -129,10 +130,20 @@ def grad_fn_map(grad_fn: AutogradFunction) -> Type:
     if type(grad_fn) is type(aux.grad_fn):
         XAF_class = XAF.AddmmXBackward0
 
+    # torch.bmm, torch.Tensor.bmm
+    aux = torch.bmm(input=TC, mat2=TC)
+    if type(grad_fn) is type(aux.grad_fn):
+        XAF_class = XAF.BmmXBackward0
+
+    # @, torch.dot, torch.Tensor.dot
+    aux = torch.dot(input=TA, tensor=TA)
+    if type(grad_fn) is type(aux.grad_fn):
+        XAF_class = XAF.DotXBackward0
+
     # @, torch.mm, torch.matmul, torch.nn.Linear, torch.nn.functional.linear
     aux = torch.mm(input=TB, mat2=TB)
     if type(grad_fn) is type(aux.grad_fn):
-        XAF_class = XAF.MmXBackward0  # XAF.linalg.mm.MmXBackward0
+        XAF_class = XAF.MmXBackward0
 
     # ACTIVATIONS
 

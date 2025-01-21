@@ -72,6 +72,7 @@ class AddmmXBackward0(ExtendedAutogradFunction):
         )
         output_partials: Partials = shaped_output_partials[0]
         output_shape: Tuple[int, ...] = shaped_output_partials[1]
+        assert len(output_shape) == 2
         assert len(output_partials) == self._order
 
         multipartials: list[list[Tensor]] = [[], [], []]
@@ -164,9 +165,11 @@ class AddmmXBackward0(ExtendedAutogradFunction):
         # compute m2 partials
         aux = list()
         for i, pretensor in enumerate(pretensors):
-            dims: list[int]
-            dims = [j - 1 if j % 2 == 0 else j + 1 for j in range(1 + 2 * (i + 1))]
-            dims[0] = 0
+            dims: list[int] = [0]
+            pointer: int = 1
+            for i in range(i + 1):
+                dims.extend([pointer + 1, pointer])
+                pointer += 2
             aux.append(pretensor.permute(dims=tuple(dims)))
         pretensors = tuple(aux)
         subtensors = tuple(internal_partials)
@@ -178,9 +181,20 @@ class AddmmXBackward0(ExtendedAutogradFunction):
                 batch=(True, False),
                 device=self._device,
             )
-            dual_numel: int = m1_sizes[1] * m2_sizes[1]
+            # shape contracted tensor
+            shape = (graph_output_numel, *((i + 1) * (m2.shape[1], m2.shape[0])))
+            viewed_tensor: Tensor = contracted_tensor.view(size=shape)
+            # permute 2nd and 3rd dimensions
+            dims: list[int] = [0]
+            pointer: int = 1
+            for i in range(i + 1):
+                dims.extend([pointer + 1, pointer])
+                pointer += 2
+            permuted_tensor: Tensor = viewed_tensor.permute(dims=dims)
+            # reshape as partial
+            dual_numel: int = m1.shape[1] * m2.shape[1]
             shape = (graph_output_numel, *[dual_numel for _ in range(i + 1)])
-            multipartials[2].append(contracted_tensor.reshape(shape=shape))
+            multipartials[2].append(permuted_tensor.reshape(shape=shape))
 
         self._update_multipartials(multipartials=multipartials, shapes=multishapes)
 

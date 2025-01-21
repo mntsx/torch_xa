@@ -15,7 +15,7 @@ from src.utils.partials import unbroadcast
 from src.utils.types import AutogradFunction, ShapedPartials, Partials
 
 
-class MmXBackward0(ExtendedAutogradFunction):
+class BmmXBackward0(ExtendedAutogradFunction):
 
     def __init__(
         self, grad_fn: AutogradFunction, order: int, device: torch.device
@@ -27,25 +27,10 @@ class MmXBackward0(ExtendedAutogradFunction):
         integral: bool = 0 in self._output_registry
         return integral
 
-    def _get_context(
-        self,
-    ) -> Tuple[
-        Tensor,
-        Tuple[int, ...],
-        Tuple[int, ...],
-        Tensor,
-        Tuple[int, ...],
-        Tuple[int, ...],
-    ]:
+    def _get_context(self) -> Tuple[Tensor, Tensor]:
         m1: Tensor = self._grad_fn._saved_self.to(device=self._device)
-        m1_sizes: Tuple[int, ...] = self._grad_fn._saved_self_sym_sizes
-        m1_strides: Tuple[int, ...] = self._grad_fn._saved_self_sym_strides
-
         m2: Tensor = self._grad_fn._saved_mat2.to(device=self._device)
-        m2_sizes: Tuple[int, ...] = self._grad_fn._saved_mat2_sym_sizes
-        m2_strides: Tuple[int, ...] = self._grad_fn._saved_mat2_sym_strides
-
-        return (m1, m1_sizes, m1_strides, m2, m2_sizes, m2_strides)
+        return (m1, m2)
 
     def _differentiation(
         self, shaped_output_partials: ShapedPartials, idx: int
@@ -53,49 +38,42 @@ class MmXBackward0(ExtendedAutogradFunction):
 
         assert idx == 0
 
-        ctx: Tuple[
-            Tensor,
-            Tuple[int, ...],
-            Tuple[int, ...],
-            Tensor,
-            Tuple[int, ...],
-            Tuple[int, ...],
-        ]
-        ctx = self._get_context()
+        ctx: Tuple[Tensor, Tensor] = self._get_context()
         m1: Tensor = ctx[0]
-        m1_sizes: Tuple[int, ...] = ctx[1]
-        m2: Tensor = ctx[3]
-        m2_sizes: Tuple[int, ...] = ctx[4]
+        m2: Tensor = ctx[1]
 
-        expected_output_shape: Tuple[int, ...] = (m1_sizes[0], m2_sizes[1])
+        expected_output_shape: Tuple[int, ...] = (m1.shape[0], m1.shape[1], m2.shape[2])
         shaped_output_partials = unbroadcast(
-            shaped_partials=shaped_output_partials,
-            output_shape=expected_output_shape,
+            shaped_partials=shaped_output_partials, output_shape=expected_output_shape
         )
         output_partials: Partials = shaped_output_partials[0]
         output_shape: Tuple[int, ...] = shaped_output_partials[1]
-        assert len(output_shape) == 2
+        assert len(output_shape) == 3
         assert len(output_partials) == self._order
 
         multipartials: list[list[Tensor]] = [[], []]
-        multishapes: list[Tuple[int, ...]] = [m1_sizes, m2_sizes]
+        multishapes: list[Tuple[int, ...]] = [tuple(m1.shape), tuple(m2.shape)]
         expressions: list[SumGroup]
         expressions = [calculate_n_order_partial(n=n + 1) for n in range(self._order)]
 
-        # retrieve some data
+        # precalculations
         internal_partial: Tensor
         internal_partials: list[Tensor]
+        ones: Tensor
         shape: Tuple[int, ...]
         graph_output_numel: int = output_partials[0].shape[0]
+        batch_size: int
+        input_size: int
 
         # compute m1 internal partials
         internal_partials = list()
         for order in range(1, self._order + 1):
             if order == 1:
-                internal_partial = m2.T
+                ones = torch.ones(size=(m1.shape[1],), device=self._device)
+                repeated_m2: Tensor
+                repeated_m2 = torch.einsum(m2, (0, 1, 2), ones, (3,), (0, 3, 2, 1))
+                internal_partial = repeated_m2.flatten(start_dim=0, end_dim=1)
             else:
-                # shape = (m2_sizes[1], *[m2_sizes[0] for _ in range(order)])
-                # internal_partial = torch.zeros(size=shape, device=self._device)
                 internal_partial = torch.zeros(size=(1,), device=self._device)
             internal_partials.append(internal_partial)
 
@@ -105,19 +83,21 @@ class MmXBackward0(ExtendedAutogradFunction):
         contracted_tensor: Tensor
         aux: list[Tensor] = list()
         for i, partial in enumerate(output_partials):
-            shape = (graph_output_numel, *(list(output_shape) * (i + 1)))
-            aux.append(partial.view(size=shape))
+            batch_size = output_shape[0] * output_shape[1]
+            input_size = output_shape[2]
+            shape = (graph_output_numel, *((batch_size, input_size) * (i + 1)))
+            aux.append(partial.reshape(shape=shape))
         pretensors = tuple(aux)
         subtensors = tuple(internal_partials)
         for i, expression in enumerate(expressions):
-            contracted_tensor = contraction(
+            contracted_tensor: Tensor = contraction(
                 pretensors=pretensors,
                 subtensors=subtensors,
                 expression=expression,
-                batch=(True, False),
                 device=self._device,
+                batch=(True, True),
             )
-            dual_numel: int = m1_sizes[0] * m2_sizes[0]
+            dual_numel: int = m1.shape[0] * m1.shape[1] * m2.shape[1]
             shape = (graph_output_numel, *[dual_numel for _ in range(i + 1)])
             multipartials[0].append(contracted_tensor.reshape(shape=shape))
 
@@ -125,42 +105,57 @@ class MmXBackward0(ExtendedAutogradFunction):
         internal_partials = list()
         for order in range(1, self._order + 1):
             if order == 1:
-                internal_partial = m1
+                ones = torch.ones(size=(m2.shape[2],), device=self._device)
+                repeated_m1: Tensor
+                repeated_m1 = torch.einsum(m1, (0, 1, 2), ones, (3,), (0, 3, 1, 2))
+                internal_partial = repeated_m1.flatten(start_dim=0, end_dim=1)
             else:
                 internal_partial = torch.zeros(size=(1,), device=self._device)
             internal_partials.append(internal_partial)
 
         # compute m2 partials
         aux = list()
-        for i, pretensor in enumerate(pretensors):
+        for i, partial in enumerate(output_partials):
+            # shape output partial to (batch, input, non-contracting dim)
+            shape = (graph_output_numel, *(output_shape * (i + 1)))
+            viewed_partial: Tensor = partial.view(size=shape)
+            # permute 2nd and 3rd dimensions
             dims: list[int] = [0]
             pointer: int = 1
             for i in range(i + 1):
-                dims.extend([pointer + 1, pointer])
-                pointer += 2
-            aux.append(pretensor.permute(dims=tuple(dims)))
+                dims.extend([pointer, pointer + 2, pointer + 1])
+                pointer += 3
+            permuted_partial: Tensor = viewed_partial.permute(dims=tuple(dims))
+            # shape to (batch, input)
+            batch_size = output_shape[0] * output_shape[2]
+            input_size = output_shape[1]
+            shape = (graph_output_numel, *((batch_size, input_size) * (i + 1)))
+            aux.append(permuted_partial.reshape(shape=shape))
         pretensors = tuple(aux)
         subtensors = tuple(internal_partials)
         for i, expression in enumerate(expressions):
-            contracted_tensor = contraction(
+            contracted_tensor: Tensor = contraction(
                 pretensors=pretensors,
                 subtensors=subtensors,
                 expression=expression,
-                batch=(True, False),
                 device=self._device,
+                batch=(True, True),
             )
             # shape contracted tensor
-            shape = (graph_output_numel, *((i + 1) * (m2.shape[1], m2.shape[0])))
+            shape = (
+                graph_output_numel,
+                *((i + 1) * (m2.shape[0], m2.shape[2], m2.shape[1])),
+            )
             viewed_tensor: Tensor = contracted_tensor.view(size=shape)
             # permute 2nd and 3rd dimensions
             dims: list[int] = [0]
             pointer: int = 1
             for i in range(i + 1):
-                dims.extend([pointer + 1, pointer])
-                pointer += 2
+                dims.extend([pointer, pointer + 2, pointer + 1])
+                pointer += 3
             permuted_tensor: Tensor = viewed_tensor.permute(dims=dims)
             # reshape as partial
-            dual_numel: int = m1.shape[1] * m2.shape[1]
+            dual_numel: int = m1.shape[0] * m1.shape[2] * m2.shape[2]
             shape = (graph_output_numel, *[dual_numel for _ in range(i + 1)])
             multipartials[1].append(permuted_tensor.reshape(shape=shape))
 
