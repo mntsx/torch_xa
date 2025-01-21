@@ -261,9 +261,11 @@ Below is an overview of the **torch_xa** repository’s structure, illustrating 
 │   │   └── XAF
 │   │       ├── activations
 │   │       ├── attention
+│   │       ├── conditional
 │   │       ├── convolutional
 │   │       ├── indexation
 │   │       ├── linalg
+│   │       ├── mathematics
 │   │       ├── normalization
 │   │       ├── product
 │   │       ├── reshape
