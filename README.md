@@ -199,7 +199,7 @@ The proper functioning of extended autograd with each different PyTorch operator
 - **AddmmBackward0**: `torch.addmm`, `torch.Tensor.addmm`, `torch.nn.Linear`, `torch.nn.functional.linear`
 - **BmmBackward0**: `torch.bmm`, `torch.Tensor.bmm`
 - **DotBackward0**: `@`,`torch.dot`, `torch.Tensor.dot`
-- **MatmulBackward0**: `@`,`torch.mm`, `torch.Tensor.mm`, `torch.matmul`, `torch.Tensor.matmul`, `torch.nn.Linear`, `torch.nn.functional.linear`
+- **MmBackward0**: `@`,`torch.mm`, `torch.Tensor.mm`, `torch.matmul`, `torch.Tensor.matmul`, `torch.nn.Linear`, `torch.nn.functional.linear`
 
 ### Exponentiating
 
