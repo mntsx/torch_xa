@@ -177,7 +177,7 @@ Refer to individual scripts within the `benchmarks/` folder for specific instruc
 
 ## Compatibility
 
-The proper functioning of extended autograd with each different PyTorch operator requires the implementation of its corresponding extended backward function. For this reason, extended autograd is only compatible with a subset of PyTorch operators. The following list enumerates all the backward functions of PyTorch operators that are compatible with those supported by torch_xa.
+The proper functioning of extended autograd with each different PyTorch operator requires the implementation of its corresponding extended backward function. For this reason, extended autograd is only compatible with a subset of PyTorch operators. The following list enumerates all the PyTorch backward functions supported by torch_xa.
 
 ### Activation
 
