@@ -177,60 +177,62 @@ Refer to individual scripts within the `benchmarks/` folder for specific instruc
 
 ## Compatibility
 
-The proper functioning of extended autograd with each different PyTorch operator requires the implementation of its corresponding extended backward function. For this reason, extended autograd is only compatible with a subset of PyTorch operators. Below is a list of these operators.
+The proper functioning of extended autograd with each different PyTorch operator requires the implementation of its corresponding extended backward function. For this reason, extended autograd is only compatible with a subset of PyTorch operators. The following list enumerates all the backward functions of PyTorch operators that are compatible with those supported by torch_xa.
 
-### Activations
+### Activation
 
-- **ELU**: `torch.nn.ELU`, `torch.nn.functional.elu`
-- **LeakyReLU**: `torch.nn.LeakyReLU`, `torch.nn.functional.leaky_relu`
-- **PReLU**: `torch.nn.PReLU`, `torch.nn.functional.prelu`
-- **ReLU**: `torch.relu`, `torch.nn.ReLU`, `torch.nn.functional.relu`
-- **SeLU**: `torch.nn.SeLU`, `torch.nn.functional.selu`
-- **Sigmoid**: `torch.sigmoid`, `torch.nn.Sigmoid`, `torch.nn.functional.sigmoid`
-- **Softmax**: `torch.softmax`, `torch.nn.Softmax`, `torch.nn.functional.softmax`
-- **Tanh**: `torch.tanh`, `torch.nn.Tanh`, `torch.nn.functional.tanh`
+- **EluBackward0**: `torch.nn.ELU`, `torch.nn.functional.elu`
+- **LeakyReluBackward0**: `torch.nn.LeakyReLU`, `torch.nn.functional.leaky_relu`
+- **PreluBackward0**: `torch.nn.PReLU`, `torch.nn.functional.prelu`
+- **ReluBackward0**: `torch.relu`, `torch.nn.ReLU`, `torch.nn.functional.relu`
+- **SeluBackward0**: `torch.nn.SeLU`, `torch.nn.functional.selu`
+- **SigmoidBackward0**: `torch.sigmoid`, `torch.nn.Sigmoid`, `torch.nn.functional.sigmoid`
+- **SoftmaxBackward0**: `torch.softmax`, `torch.nn.Softmax`, `torch.nn.functional.softmax`
+- **TanhBackward0**: `torch.tanh`, `torch.nn.Tanh`, `torch.nn.functional.tanh`
 
-### Conditionals
+### Condition
 
-- **Where**: `torch.where`, `torch.Tensor.where`
+- **WhereBackward0**: `torch.where`, `torch.Tensor.where`
 
-### Matrix Multiplications
+### Matrix Multiplication
 
-- **Addmm**: `torch.addmm`, `torch.Tensor.addmm`, `torch.nn.Linear`, `torch.nn.functional.linear`
-- **Bmm**: `torch.bmm`, `torch.Tensor.bmm`
-- **Dot**: `@`,`torch.dot`, `torch.Tensor.dot`
-- **Matmul**: `@`,`torch.mm`, `torch.Tensor.mm`, `torch.matmul`, `torch.Tensor.matmul`, `torch.nn.Linear`, `torch.nn.functional.linear`
+- **AddmmBackward0**: `torch.addmm`, `torch.Tensor.addmm`, `torch.nn.Linear`, `torch.nn.functional.linear`
+- **BmmBackward0**: `torch.bmm`, `torch.Tensor.bmm`
+- **DotBackward0**: `@`,`torch.dot`, `torch.Tensor.dot`
+- **MatmulBackward0**: `@`,`torch.mm`, `torch.Tensor.mm`, `torch.matmul`, `torch.Tensor.matmul`, `torch.nn.Linear`, `torch.nn.functional.linear`
 
-### Powers
+### Exponentiating
 
-- **Exp**: `torch.exp`, `torch.Tensor.exp`
-- **Pow**: `**`, `torch.pow`, `torch.Tensor.pow`, `torch.square`, `torch.Tensor.square`
-- **Sqrt**: `torch.prod`, `torch.Tensor.prod`
+- **ExpBackward0**: `torch.exp`, `torch.Tensor.exp`
+- **PowBackward0**: `**`, `torch.pow`, `torch.Tensor.pow`, `torch.square`, `torch.Tensor.square`
+- **SqrtBackward0**: `torch.prod`, `torch.Tensor.prod`
 
-### Products
+### Product
 
-- **Div**: `/`, `torch.div`, `torch.Tensor.div`
-- **Mul**: `*`, `torch.mul`, `torch.Tensor.mul`, `torch.multiply`, `torch.nn.Dropout`, `torch.nn.functional.dropout`
-- **Prod**: `torch.prod`, `torch.Tensor.prod`
+- **DivBackward0**: `/`, `torch.div`, `torch.Tensor.div`
+- **MulBackward0**: `*`, `torch.mul`, `torch.Tensor.mul`, `torch.multiply`, `torch.nn.Dropout`, `torch.nn.functional.dropout`
+- **ProdBackward0**: `torch.prod`, `torch.Tensor.prod`
+- **ProdBackward1**: `torch.prod`, `torch.Tensor.prod`
 
-### Reshapes
+### Reshape
 
-- **Permute**: `torch.permute`, `torch.Tensor.permute`, `torch.Tensor.T`
-- **T**: `torch.t`, `torch.Tensor.t`
-- **Transpose**: `torch.transpose`, `torch.Tensor.transpose`
-- **View**: `torch.view`, `torch.Tensor.view`, `torch.flatten`, `torch.Tensor.flatten`
+- **PermuteBackward0**: `torch.permute`, `torch.Tensor.permute`, `torch.Tensor.T`
+- **TBackward0**: `torch.t`, `torch.Tensor.t`
+- **TransposeBackward0**: `torch.transpose`, `torch.Tensor.transpose`
+- **ViewBackward0**: `torch.view`, `torch.Tensor.view`, `torch.Tensor.view_as`, `torch.flatten`, `torch.Tensor.flatten`
 
-### Summations
+### Summation
 
-- **Add**: `+`, `torch.add`, `torch.Tensor.add`
-- **Sub**: `-`, `torch.sub`, `torch.Tensor.subtract`
-- **Sum**: `torch.sum`, `torch.Tensor.sum`
+- **AddBackward0**: `+`, `torch.add`, `torch.Tensor.add`
+- **SubBackward0**: `-`, `torch.sub`, `torch.Tensor.subtract`
+- **SumBackward0**: `torch.sum`, `torch.Tensor.sum`
+- **SumBackward1**: `torch.sum`, `torch.Tensor.sum`
 
-### More Mathematical Operators
+### More Mathematicals
 
-- **Cos**: `torch.cos`
-- **Log**: `torch.log`
-- **Sin**: `torch.sin`
+- **CosBackward0**: `torch.cos`
+- **LogBackward0**: `torch.log`
+- **SinBackward0**: `torch.sin`
 
 ---
 
