@@ -2,6 +2,8 @@
 
 <br>
 
+> Note: This repository is still under development. Some of its functionalities may exhibit incomplete or incorrect behavior.
+
 ## Introduction
 
 **torch_xa** is a Python-based implementation of an extended autograd engine that emulates PyTorch’s computational graph mechanism while providing **arbitrary-order partial derivatives**. Unlike PyTorch’s native autograd, which stops at first-order derivatives, **torch_xa** can propagate higher-order derivatives throughout the computational graph for more advanced gradient-based computations.
@@ -228,7 +230,7 @@ The proper functioning of extended autograd with each different PyTorch operator
 - **SumBackward0**: `torch.sum`, `torch.Tensor.sum`
 - **SumBackward1**: `torch.sum`, `torch.Tensor.sum`
 
-### More Mathematicals
+### More Mathematics
 
 - **CosBackward0**: `torch.cos`
 - **LogBackward0**: `torch.log`
