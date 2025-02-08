@@ -207,7 +207,7 @@ The proper functioning of extended autograd with each different PyTorch operator
 
 - **ExpBackward0**: `torch.exp`, `torch.Tensor.exp`
 - **PowBackward0**: `**`, `torch.pow`, `torch.Tensor.pow`, `torch.square`, `torch.Tensor.square`
-- **SqrtBackward0**: `torch.prod`, `torch.Tensor.prod`
+- **SqrtBackward0**: `torch.sqrt`, `torch.Tensor.sqrt`
 
 ### Product
 
