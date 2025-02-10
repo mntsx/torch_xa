@@ -232,9 +232,10 @@ The proper functioning of extended autograd with each different PyTorch operator
 
 ### More Mathematics
 
+- **SinBackward0**: `torch.sin`
 - **CosBackward0**: `torch.cos`
 - **LogBackward0**: `torch.log`
-- **SinBackward0**: `torch.sin`
+
 
 ---
 
